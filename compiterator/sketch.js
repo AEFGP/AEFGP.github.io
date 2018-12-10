@@ -4,14 +4,14 @@ function setup() {
 	//Stuff you can change
 	g.t = createVector(1,0)
 	g.attrs = [[
-			createVector(0,2/sqrt(3)),
-			createVector(1,-1/sqrt(3)),
-			createVector(-1,-1/sqrt(3)),
+			createVector(0,4/sqrt(3)/3),
+			createVector(2/3,-2/sqrt(3)/3),
+			createVector(-2/3,-2/sqrt(3)/3),
 		],
 		[
-			createVector(0,-2/sqrt(3)),
-			createVector(1,1/sqrt(3)),
-			createVector(-1,1/sqrt(3)),
+			createVector(0,-4/sqrt(3)/3),
+			createVector(2/3,2/sqrt(3)/3),
+			createVector(-2/3,2/sqrt(3)/3),
 		]
 	]
 	g.reps = 500
@@ -54,7 +54,9 @@ function setup() {
 
 function iterate() {
 	switch (g.e){
+		//Choose iteration algorithm
 		case 0:
+		//Linear Interpolation
 			R0 = sqrt(g.t.x*g.t.x+g.t.y*g.t.y)
 			R1 = (1-1/(R0+1))/R0
 			x0 = g.t.x*R1
@@ -67,6 +69,7 @@ function iterate() {
 			y3 = (1-x0)*y1-y0*x1+x0*y2+y0*x2
 		break
 		case 1:
+		//Constant Distance
 			x0 = exp(g.t.x)
 			y0 = log(abs(g.t.y)+1)*(g.t.y<0 ? -1 : 1)
 			x0 = exp(g.t.x)
@@ -80,6 +83,50 @@ function iterate() {
 			y3 = y2+(x0*y1+x1*y0)/R
 		break
 		case 2:
+		//Exponential Iteration -> Linear Interpolation
+			x4 = g.t.x*2
+			y4 = g.t.y*2
+			x1 = g.attr.x
+			y1 = g.attr.y
+			x2 = g.pnt.x
+			y2 = g.pnt.y
+			R2 = sqrt(x2*x2+y2*y2)
+			T = atan2(y2,x2)
+			x5 = x1+pow(R2,x4)*exp(-y4*T)*cos(T*x4+y4*log(R2))
+			y5 = y1+pow(R2,x4)*exp(-y4*T)*sin(T*x4+y4*log(R2))
+			R0 = sqrt(x5*x5+y5*y5)
+			R1 = (1-1/(R0+1))/R0
+			x0 = x5*R1
+			y0 = y5*R1
+			x3 = (1-x0)*x1+y0*y1+x0*x2-y0*y2
+			y3 = (1-x0)*y1-y0*x1+x0*y2+y0*x2
+		break
+		case 3:
+		//Exponential Iteration -> Constant Distance
+			x4 = g.t.x*2
+			y4 = g.t.y*2
+			x5 = g.attr.x
+			y5 = g.attr.y
+			x2 = g.pnt.x
+			y2 = g.pnt.y
+			R2 = sqrt(x2*x2+y2*y2)
+			T = atan2(y2,x2)
+			x6 = x5+pow(R2,x4)*exp(-y4*T)*cos(T*x4+y4*log(R2))
+			y6 = y5+pow(R2,x4)*exp(-y4*T)*sin(T*x4+y4*log(R2))
+			x0 = exp(x6)
+			y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
+			x0 = exp(x6)
+			y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
+			x1 = g.attr.x-g.pnt.x
+			y1 = g.attr.y-g.pnt.y
+			x2 = g.pnt.x
+			y2 = g.pnt.y
+			R = sqrt(x1*x1+y1*y1)
+			x3 = x2+(x0*x1-y0*y1)/R
+			y3 = y2+(x0*y1+x1*y0)/R
+		break
+		case 4:
+		//Exponential Iteration
 			x0 = g.t.x*2
 			y0 = g.t.y*2
 			x1 = g.attr.x
@@ -104,10 +151,12 @@ function iterate() {
 }
 
 function mod(a,b){
+	//Float modulo function
 	return a-b*int(a/b)
 }
 
 function mout(x,y,a){
+	//Change variable point
 	switch(g.mfix){
 		case 1:
 			g.colx=(x-g.x)/g.scal
@@ -142,6 +191,7 @@ function mout(x,y,a){
 } 
 
 function mget(){
+	//Get point data to vary
 	let x=0.0
 	let y=0.0
 	switch(g.mfix){
@@ -173,11 +223,13 @@ function mget(){
 }
 
 function draw() {
+	//Main Draw loop
 	background(0)
 	translate(g.x,g.y)
 	let tepnt=g.attrs[g.addr]
 	g.epnt=tepnt[tepnt.length-1]
 	if (g.edit) {
+		//Edit mode
 		len = g.attrs.length
 		brk = []
 		brek = 1
@@ -207,6 +259,7 @@ function draw() {
 		}
 	}
 	else { 
+		//Render mode
 		for (let i = 0;i<g.reps/(g.mem+(g.mem==0));i++){
 			if(random()>g.regen){
 				regen()
@@ -270,6 +323,7 @@ function draw() {
 			let cp=g.pnt.copy().sub(createVector(g.colx,g.coly))
 			let cph=ph.sub(createVector(g.colx,g.coly))
 			switch(g.col){
+				//Choose colour
 				case 1:
 					h = cph.heading()
 					if (h<0){
@@ -315,6 +369,7 @@ function draw() {
 }
 
 function windowResized() {
+	//Event for when window is resized
 	resizeCanvas(windowWidth*g.cr,windowHeight*g.cr)
 	t = min(width,height)/(1080*g.cr)
 	g.g = createGraphics(width,height)
@@ -328,11 +383,13 @@ function windowResized() {
 }
 
 function regen() {
+	//Reset iterated point to a random value
 	g.pnt.x = 2*random()-1
 	g.pnt.y = 2*random()-1
 }
 
 function keyPressed() {
+	//Event for handling keypresses
 	print(keyCode)
 	if (keyCode==32){
 		//space
@@ -445,7 +502,7 @@ function keyPressed() {
 		}
 		if (keyCode==69){
 			//e
-			g.e=mod(g.e+1,3)
+			g.e=mod(g.e+1,5)
 		}
 		if (keyCode==72){
 			//h
@@ -487,6 +544,7 @@ function keyPressed() {
 }
 
 function mouseClicked(){
+	//Separate event for alt clicking in edit mode
 	if (keyCode==18 && keyIsPressed && g.edit){
 		g.attrs[g.addr].push(createVector(mouseX-g.x,g.y-mouseY).div(g.scal))
 	}

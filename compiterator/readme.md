@@ -54,9 +54,11 @@ To clear the screen press `R` or go to edit mode and then back to render.
 Pressing `Q` toggles the rendering so that no changes occur, useful for pausing to inspect and for swapping modes for creative combinations.      
 
 Pressing `E` will cycle the different algorithms for the chaos game, it will not clear the screen.   
-* In the first mode, sets the complex parameter for the linear interpolation algorithm.
-* In the second mode, sets the complex parameter for the constant distance algorithm.    
-* In the third mode, sets the complex parameter for the fatou experimental algorithm
+1. linear interpolation algorithm.
+1. constant distance algorithm.    
+1. linear interpolation algorithm with exponential sum output parameter
+1. constant distance with exponential sum output parameter
+1. exponential sum algorithm
  
 Pressing `~` will cycle the different mouse-selector modes.     
 The mouse (or `WASD` keys) will set/move the point that controls the:   
@@ -65,7 +67,7 @@ The mouse (or `WASD` keys) will set/move the point that controls the:
 1. Location of the iterated point, can be used to demonstrate the attractor properties.
 1. Point at which the plot is drawn towards, also useful to demonstrate the attractors.
 1. Game probabilities, with the probability of iterated point resetting as x and layer swapping as y respectively.
-1. Most recently created node, mostly for making small adjustments in the fatou experimental mode.    
+1. Most recently created node, mostly for making small adjustments in the exponential sum mode.    
 
 You can budge the point specified by the input settings that would otherwise be set by the mouse a small distance from its current position by pressing `WASD` in the way you would expect, `W` = up, `A` = left, `S` = down, `D` = right.    
 This can be used to observe how small changes in the current state effect the outcome without having to locate the old point with the mouse.
@@ -98,7 +100,9 @@ There are three algorithms for the iteration:
 The parameter, based on the screen position, is mapped from the whole plane into the unit disk.
 1. The iterated point moves by a rotation of a constant complex vector towards the chosen node.
 The parameter, based on the screen position, is mapped in the reals by an exponential and in the imaginary by a branched logarithm.
+1. The iterated point moves on a linear interpolation to the chosen node with a complex parameter of the output of the sum of a complex expoentiation function and the chosen node.
+1. The iterated point moves by a rotation of a constant complex vector (the output of the sum of a complex exponentiation function and the chosen node) towards the chosen node.
 1. The iterated point moves to the output of the iterated sum of a complex exponentiation function and the chosen node
 The parameter, based on twice the screen position, is used as the exponent.   
 
-For this last algorithm to work the probability of the point being reset must be more than 0, adjustable via the fifth mouse-selector mode. Otherwise the point iterates away from the canvas in most cases and thus produces not much of an image.
+For the last two algorithms to work the probability of the point being reset must be more than 0, adjustable via the fifth mouse-selector mode. Otherwise the point iterates away from the canvas in most cases and thus produces not much of an image.
