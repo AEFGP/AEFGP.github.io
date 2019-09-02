@@ -38,9 +38,11 @@ function setup() {
 	textSize(20*t)
 	textFont('Consolas')
 	g.set=g.attrs[0]
+	g.seti=0
 	g.addr=0
 	g.edit=1
 	g.e = 0
+	g.me = 4
 	g.col=1
 	g.excl=0
 	g.excn=0
@@ -52,99 +54,144 @@ function setup() {
 	g.shift=0
 }
 
+//Iteration Modes
+function itLI() {
+	r0 = sqrt(g.t.x*g.t.x+g.t.y*g.t.y)
+	r1 = (1-1/(r0+1))/r0
+	x0 = g.t.x*r1
+	y0 = g.t.y*r1
+	x1 = g.attr.x
+	y1 = g.attr.y
+	x2 = g.pnt.x
+	y2 = g.pnt.y
+	x3 = (1-x0)*x1+y0*y1+x0*x2-y0*y2
+	y3 = (1-x0)*y1-y0*x1+x0*y2+y0*x2
+}
+
+function itCD() {
+	x0 = exp(g.t.x)
+	y0 = log(abs(g.t.y)+1)*(g.t.y<0 ? -1 : 1)
+	x0 = exp(g.t.x)
+	y0 = log(abs(g.t.y)+1)*(g.t.y<0 ? -1 : 1)
+	x1 = g.attr.x-g.pnt.x
+	y1 = g.attr.y-g.pnt.y
+	x2 = g.pnt.x
+	y2 = g.pnt.y
+	r = sqrt(x1*x1+y1*y1)
+	x3 = x2+(x0*x1-y0*y1)/r
+	y3 = y2+(x0*y1+x1*y0)/r
+}
+
+function itEItoLI() {
+	x4 = g.t.x*2
+	y4 = g.t.y*2
+	x1 = g.attr.x
+	y1 = g.attr.y
+	x2 = g.pnt.x
+	y2 = g.pnt.y
+	r2 = sqrt(x2*x2+y2*y2)
+	t = atan2(y2,x2)
+	x5 = x1+pow(r2,x4)*exp(-y4*t)*cos(t*x4+y4*log(r2))
+	y5 = y1+pow(r2,x4)*exp(-y4*t)*sin(t*x4+y4*log(r2))
+	r0 = sqrt(x5*x5+y5*y5)
+	r1 = (1-1/(r0+1))/r0
+	x0 = x5*r1
+	y0 = y5*r1
+	x3 = (1-x0)*x1+y0*y1+x0*x2-y0*y2
+	y3 = (1-x0)*y1-y0*x1+x0*y2+y0*x2
+}
+
+function itEItoCD(){
+	x4 = g.t.x*2
+	y4 = g.t.y*2
+	x5 = g.attr.x
+	y5 = g.attr.y
+	x2 = g.pnt.x
+	y2 = g.pnt.y
+	r2 = sqrt(x2*x2+y2*y2)
+	t = atan2(y2,x2)
+	x6 = x5+pow(r2,x4)*exp(-y4*t)*cos(t*x4+y4*log(r2))
+	y6 = y5+pow(r2,x4)*exp(-y4*t)*sin(t*x4+y4*log(r2))
+	x0 = exp(x6)
+	y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
+	x0 = exp(x6)
+	y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
+	x1 = g.attr.x-g.pnt.x
+	y1 = g.attr.y-g.pnt.y
+	x2 = g.pnt.x
+	y2 = g.pnt.y
+	r = sqrt(x1*x1+y1*y1)
+	x3 = x2+(x0*x1-y0*y1)/r
+	y3 = y2+(x0*y1+x1*y0)/r
+}
+
+function itEI(){
+	x0 = g.t.x*2
+	y0 = g.t.y*2
+	x1 = g.attr.x
+	y1 = g.attr.y
+	x2 = g.pnt.x
+	y2 = g.pnt.y
+	r = sqrt(x2*x2+y2*y2)
+	t = atan2(y2,x2)
+	x3 = x1+pow(r,x0)*exp(-y0*t)*cos(t*x0+y0*log(r))
+	y3 = y1+pow(r,x0)*exp(-y0*t)*sin(t*x0+y0*log(r))
+}
+
+function itMP(){
+	x1 = g.attr.x
+	y1 = g.attr.y
+	x2 = g.pnt.x
+	y2 = g.pnt.y
+	x3 = (x1+x2)/2
+	y3 = (y1+y2)/2
+}
+
+function itPF(){
+	n=g.set.length
+	c=g.polyCs[g.seti]
+	z=zPows(n)
+	cx=c[0].x
+	cy=c[0].y
+	zx=z[0].x
+	zy=z[0].y
+	p=createVector(cx*zx-cy*zy,cx*zy+cy*zx)
+	for (i=1;i<n;i++){
+		cx=c[i].x
+		cy=c[i].y
+		zx=z[i].x
+		zy=z[i].y
+		p.add(createVector(cx*zx-cy*zy,cx*zy+cy*zx))
+	}
+	x3=p.x
+	y3=p.y
+	//g.pnt=p
+}
+
 function iterate() {
+	x3=0
+	y3=0
 	switch (g.e){
 		//Choose iteration algorithm
 		case 0:
 		//Linear Interpolation
-			R0 = sqrt(g.t.x*g.t.x+g.t.y*g.t.y)
-			R1 = (1-1/(R0+1))/R0
-			x0 = g.t.x*R1
-			y0 = g.t.y*R1
-			x1 = g.attr.x
-			y1 = g.attr.y
-			x2 = g.pnt.x
-			y2 = g.pnt.y
-			x3 = (1-x0)*x1+y0*y1+x0*x2-y0*y2
-			y3 = (1-x0)*y1-y0*x1+x0*y2+y0*x2
+			itLI()
 		break
 		case 1:
 		//Constant Distance
-			x0 = exp(g.t.x)
-			y0 = log(abs(g.t.y)+1)*(g.t.y<0 ? -1 : 1)
-			x0 = exp(g.t.x)
-			y0 = log(abs(g.t.y)+1)*(g.t.y<0 ? -1 : 1)
-			x1 = g.attr.x-g.pnt.x
-			y1 = g.attr.y-g.pnt.y
-			x2 = g.pnt.x
-			y2 = g.pnt.y
-			R = sqrt(x1*x1+y1*y1)
-			x3 = x2+(x0*x1-y0*y1)/R
-			y3 = y2+(x0*y1+x1*y0)/R
+			itCD()
 		break
 		case 2:
 		//Exponential Iteration -> Linear Interpolation
-			x4 = g.t.x*2
-			y4 = g.t.y*2
-			x1 = g.attr.x
-			y1 = g.attr.y
-			x2 = g.pnt.x
-			y2 = g.pnt.y
-			R2 = sqrt(x2*x2+y2*y2)
-			T = atan2(y2,x2)
-			x5 = x1+pow(R2,x4)*exp(-y4*T)*cos(T*x4+y4*log(R2))
-			y5 = y1+pow(R2,x4)*exp(-y4*T)*sin(T*x4+y4*log(R2))
-			R0 = sqrt(x5*x5+y5*y5)
-			R1 = (1-1/(R0+1))/R0
-			x0 = x5*R1
-			y0 = y5*R1
-			x3 = (1-x0)*x1+y0*y1+x0*x2-y0*y2
-			y3 = (1-x0)*y1-y0*x1+x0*y2+y0*x2
+			itEItoLI()
 		break
 		case 3:
-		//Exponential Iteration -> Constant Distance
-			x4 = g.t.x*2
-			y4 = g.t.y*2
-			x5 = g.attr.x
-			y5 = g.attr.y
-			x2 = g.pnt.x
-			y2 = g.pnt.y
-			R2 = sqrt(x2*x2+y2*y2)
-			T = atan2(y2,x2)
-			x6 = x5+pow(R2,x4)*exp(-y4*T)*cos(T*x4+y4*log(R2))
-			y6 = y5+pow(R2,x4)*exp(-y4*T)*sin(T*x4+y4*log(R2))
-			x0 = exp(x6)
-			y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
-			x0 = exp(x6)
-			y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
-			x1 = g.attr.x-g.pnt.x
-			y1 = g.attr.y-g.pnt.y
-			x2 = g.pnt.x
-			y2 = g.pnt.y
-			R = sqrt(x1*x1+y1*y1)
-			x3 = x2+(x0*x1-y0*y1)/R
-			y3 = y2+(x0*y1+x1*y0)/R
-		break
-		case 4:
-		//Exponential Iteration
-			x0 = g.t.x*2
-			y0 = g.t.y*2
-			x1 = g.attr.x
-			y1 = g.attr.y
-			x2 = g.pnt.x
-			y2 = g.pnt.y
-			R = sqrt(x2*x2+y2*y2)
-			T = atan2(y2,x2)
-			x3 = x1+pow(R,x0)*exp(-y0*T)*cos(T*x0+y0*log(R))
-			y3 = y1+pow(R,x0)*exp(-y0*T)*sin(T*x0+y0*log(R))
+		//Polynomial Function
+			itPF()
 		break
 		default:
-			x1 = g.attr.x
-			y1 = g.attr.y
-			x2 = g.pnt.x
-			y2 = g.pnt.y
-			x3 = (x1+x2)/2
-			y3 = (y1+y2)/2
+		//Midpoint
+			itMP()
 	}
 	g.pnt.x=x3
 	g.pnt.y=y3
@@ -153,6 +200,49 @@ function iterate() {
 function mod(a,b){
 	//Float modulo function
 	return a-b*int(a/b)
+}
+
+function updPolyCs(){
+	if (g.e==3){
+		g.polyCs=[attrPolyCs(g.attrs[0])]
+		for (j=1;j<g.attrs.length;j++){
+			g.polyCs.push(attrPolyCs(g.attrs[j]))
+		}
+	}
+}
+
+function attrPolyCs(set){
+	c=[createVector(g.t.x,g.t.y)]
+	for (n=0;n<set.length;n++){
+		c.push(0)
+		sr=set[n].x
+		si=set[n].y
+		for (i=n;i>0;i--){
+			cr=c[i].x
+			ci=c[i].y
+			cl=c[i-1].copy()
+			c[i]=cl.sub(createVector(sr*cr-si*cr,sr*ci+si*cr))
+		}
+		cr=c[0].x
+		ci=c[0].y
+		c[0]=createVector(-sr*cr-si*ci,-sr*ci-si*cr)
+	}
+	return c
+}
+
+function zPows(n){
+	x=g.pnt.x
+	y=g.pnt.y
+	zp=[createVector(1,0)]
+	if (n>0){
+		zp.push(createVector(x,y))
+	}
+	xp=x
+	yp=y
+	for (i=2;i<n;i++){
+		zp.push(createVector(xp*x-yp*y,xp*y+yp*x))
+	}
+	return zp
 }
 
 function mout(x,y,a){
@@ -187,6 +277,7 @@ function mout(x,y,a){
 		default:
 			g.t.x=(x-g.x)/g.scal
 			g.t.y=-(y-g.y)/g.scal
+			updPolyCs()
 	}
 } 
 
@@ -246,7 +337,7 @@ function draw() {
 								brk.push([i,k])
 								brek = 0
 						}
-				}
+					}
 				}
 				if(brek){
 					fill(360*i/len,360,360)
@@ -288,10 +379,12 @@ function draw() {
 							_set.push(g.attrs[k])
 						}
 					}
-					g.set = random(_set)
+					g.seti = floor(random(0,_set.length))
+					g.set = _set[g.seti]
 				}
 				else{
-					g.set = random(g.attrs)
+					g.seti = floor(random(0,g.attrs.length))
+					g.set = g.attrs[g.seti]
 				}
 			}
 			if((g.excn!=0) && g.set.length>1){
@@ -502,7 +595,7 @@ function keyPressed() {
 		}
 		if (keyCode==69){
 			//e
-			g.e=mod(g.e+1,5)
+			g.e=mod(g.e+1,g.me)
 		}
 		if (keyCode==72){
 			//h
@@ -541,11 +634,13 @@ function keyPressed() {
 			g.mem++
 		}
 	}
+	updPolyCs()
 }
 
 function mouseClicked(){
 	//Separate event for alt clicking in edit mode
 	if (keyCode==18 && keyIsPressed && g.edit){
 		g.attrs[g.addr].push(createVector(mouseX-g.x,g.y-mouseY).div(g.scal))
+		updPolyCs()
 	}
 }
