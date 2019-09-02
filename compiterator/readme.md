@@ -1,4 +1,3 @@
-[Visit Live Version](https://aefgp.github.io/compiterator/index.html)
 ## Controls
 
 * `space`: Toggle RENDER/EDIT modes     
@@ -58,17 +57,16 @@ Pressing `E` will cycle the different algorithms for the chaos game, it will not
 1. linear interpolation algorithm.
 1. constant distance algorithm.    
 1. linear interpolation algorithm with exponential sum output parameter
-1. constant distance with exponential sum output parameter
-1. exponential sum algorithm
+1. Polynomial function iteration.
  
 Pressing `~` will cycle the different mouse-selector modes.     
 The mouse (or `WASD` keys) will set/move the point that controls the:   
 1. Complex parameter for the various algorithms.
-1. Location of the origin for colouring.
-1. Location of the iterated point, can be used to demonstrate the attractor properties.
-1. Point at which the plot is drawn towards, also useful to demonstrate the attractors.
-1. Game probabilities, with the probability of iterated point resetting as x and layer swapping as y respectively.
-1. Most recently created node, mostly for making small adjustments in the exponential sum mode.    
+2. Location of the origin for colouring.
+3. Location of the iterated point, can be used to demonstrate the attractor properties.
+4. Point at which the plot is drawn towards, also useful to demonstrate the attractors.
+5. Game probabilities, with the probability of iterated point resetting as x and layer swapping as y respectively.
+6. Most recently created node, mostly for making small adjustments in the exponential sum mode.    
 
 You can budge the point specified by the input settings that would otherwise be set by the mouse a small distance from its current position by pressing `WASD` in the way you would expect, `W` = up, `A` = left, `S` = down, `D` = right.    
 This can be used to observe how small changes in the current state effect the outcome without having to locate the old point with the mouse.
@@ -102,8 +100,6 @@ The parameter, based on the screen position, is mapped from the whole plane into
 1. The iterated point moves by a rotation of a constant complex vector towards the chosen node.
 The parameter, based on the screen position, is mapped in the reals by an exponential and in the imaginary by a branched logarithm.
 1. The iterated point moves on a linear interpolation to the chosen node with a complex parameter of the output of the sum of a complex expoentiation function and the chosen node.
-1. The iterated point moves by a rotation of a constant complex vector (the output of the sum of a complex exponentiation function and the chosen node) towards the chosen node.
-1. The iterated point moves to the output of the iterated sum of a complex exponentiation function and the chosen node
-The parameter, based on twice the screen position, is used as the exponent.   
+1. The iterated point moves to the output of a polynomial function that has the current layer as zeroes and an initial constant of the complex parameter.    
 
-For the last two algorithms to work the probability of the point being reset must be more than 0, adjustable via the fifth mouse-selector mode. Otherwise the point iterates away from the canvas in most cases and thus produces not much of an image.
+Sometimes the polynomial can escape the canvas, simply refresh the canvas or enable the randomisation.
