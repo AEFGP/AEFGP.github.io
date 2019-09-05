@@ -1,9 +1,20 @@
-let g = {}
+let G = {} //cross-canvas global container
 
 function setup() {
 	//Stuff you can change
-	g.t = createVector(1,0)
-	g.attrs = [[
+	G.t = createVector(1,0) //Iteration complex parameter's initial value
+	G.rot = createVector(1,0) //Screen rotation complex parameter's initial value
+	G.e = 0 // iteration mode
+	G.col=1 // colour mode
+	G.mem=1 // colour memory
+	G.rech=1  // regen check
+	G.shift=0 // exclusion mode shift toggle
+	G.excl=0 // 
+	G.excn=0 // 
+	G.errn=0 //
+	G.errl=0 // 
+
+	G.attrs = [[ //Layers of Attractor Nodes initial state
 			createVector(0,4/sqrt(3)/3),
 			createVector(2/3,-2/sqrt(3)/3),
 			createVector(-2/3,-2/sqrt(3)/3),
@@ -14,164 +25,195 @@ function setup() {
 			createVector(-2/3,2/sqrt(3)/3),
 		]
 	]
-	g.reps = 500
-	g.prob = 0.5
-	g.regen = 1
+
+	G.REPS = 500 //Number of iteration repetitions per frame
+	G.prob = 0.5 //Probability of layer reselect
+	G.regen = 1 //Probability of not regen
+	G.ITCAP = 20000 //Number of iterations until regen
+	G.ZEROR = 0 // Distance to attractor threshold for regen
+	G.NORENS= 3 //Number of points that are not rendered after each regen
+
 	//Stuff you shouldn't change
-	g.cr = 1
-	g.radi = 10
-	g.scali = 360
-	g.pnt = createVector(0,0)
-	g.trk = createVector(0,0)
-	createCanvas(windowWidth*g.cr,windowHeight*g.cr)
-	g.g = createGraphics(width,height)
-	t = min(width,height)/(1080*g.cr)
-	g.scal = g.scali*t
-	g.rad = g.radi*t
-	g.x = width/2
-	g.y = height/2
-	background(0)
-	g.g.noStroke()
+	G.CR = 1
+	createCanvas(windowWidth*G.CR,windowHeight*G.CR)
+	G.graph=createGraphics(width,height)
+	G.graph.noStroke()
+	G.graph.colorMode(HSB,360)
 	colorMode(HSB,360)
-	g.g.colorMode(HSB,360)
-	angleMode(DEGREES)
-	textSize(20*t)
-	textFont('Consolas')
-	g.set=g.attrs[0]
-	g.seti=0
-	g.addr=0
-	g.edit=1
-	g.e = 0
-	g.me = 4
-	g.col=1
-	g.excl=0
-	g.excn=0
-	g.mem=1
-	g.mfix=0
-	g.ren=1
-	g.errn=0
-	g.errl=0
-	g.shift=0
+	background(0)
+	angleMode(RADIANS)
+	smallestAspect = min(width,height)/(1080*G.CR)
+	G.SCALI = 360
+	G.RADI = 10 //Size of attractor nodes
+	G.DR = 0.25 //Size of iterated point stamps
+	G.scal = G.SCALI*smallestAspect
+	G.rad = G.RADI*smallestAspect
+	G.x = width/2
+	G.y = height/2
+	G.pnt = createVector(0,0)
+	G.pit = createVector(0,0)
+	G.trk = createVector(0,0)
+	G.set=G.attrs[0]
+	G.seti=0 // selected layer index
+	G.addr=0 // selected node in layer
+	G.edit=1 // edit/render toggle
+	G.ME = 6 // max iteration modes
+	G.mfix=0 // mouse fix mode
+	G.MMFIX=7 // max number of mouse fix modes
+	G.ren=1 // render loop toggle
+	G.itsr=0  // iterations since regen
+	G.noren=0  // iterations to not render
+}
+
+function windowResized() {
+	//Event for when window is resized
+	resizeCanvas(windowWidth*G.CR,windowHeight*G.CR)
+	G.graph=createGraphics(width,height)
+	G.graph.colorMode(HSB,360)
+	G.graph.noStroke()
+	smallestAspect = min(width,height)/(1080*G.CR)
+	G.scal = G.SCALI*smallestAspect
+	G.rad = G.RADI*smallestAspect
+	G.x = width/2
+	G.y = height/2
+}
+
+// Complex functions
+function cscal(u,s){
+	return createVector(u.x*s,u.y*s)
+}
+function cinv(u){
+	d=u.x*u.x+u.y*u.y
+	if (d){
+		return createVector(u.x/d,-u.y/d)
+	}
+	return createVector(0,0)
+}
+function cexp(u){
+	return cscal(createVector(cos(u.y),sin(u.y)),exp(u.x))
+}
+function clog(u){
+	return createVector(log(u.mag()),atan2(u.y,u.x))
+}
+
+function cadd(u,v){
+	return createVector(u.x+v.x,u.y+v.y)
+}
+function csub(u,v){
+	return createVector(u.x-v.x,u.y-v.y)
+}
+
+function ccmul(u,v){
+	return createVector(u.x*v.x,u.y*v.y)
+}
+
+function cmul(u,v){
+	return createVector(u.x*v.x-u.y*v.y,u.x*v.y+u.y*v.x)
+}
+function cdiv(u,v){
+	return cmul(u,cinv(v))
+}
+function cpow(u,v){
+	return cexp(cmul(clog(u),v))
+}
+
+function cUD(u){
+	//map to unit disk
+	r = u.mag()
+	return cscal(u,(1-1/(r+1))/r)
+}
+function cBL(u){
+	//special exp-log branch
+	return createVector(exp(u.x),log(abs(u.y)+1)*(u.y<0 ? -1 : 1))
+}
+
+function cBE(u){
+	//special exp-linear branch
+	return createVector(exp(2*abs(u.x)-1)*2*u.x,4*u.y)
+}
+
+function cLI(u,v,t){
+	return cadd(cmul(cadd(createVector(1,0),cscal(t,-1)),v),cmul(t,u))
+}
+function cCD(u,v,t){
+	w = csub(v,u)
+	m = w.mag()
+	if (m){
+		return cadd(u,cmul(t,cscal(w,1/m)))
+	}
+	return u
 }
 
 //Iteration Modes
 function itLI() {
-	r0 = sqrt(g.t.x*g.t.x+g.t.y*g.t.y)
-	r1 = (1-1/(r0+1))/r0
-	x0 = g.t.x*r1
-	y0 = g.t.y*r1
-	x1 = g.attr.x
-	y1 = g.attr.y
-	x2 = g.pnt.x
-	y2 = g.pnt.y
-	x3 = (1-x0)*x1+y0*y1+x0*x2-y0*y2
-	y3 = (1-x0)*y1-y0*x1+x0*y2+y0*x2
+	z = cLI(G.pnt,G.attr,cUD(G.t))
 }
 
 function itCD() {
-	x0 = exp(g.t.x)
-	y0 = log(abs(g.t.y)+1)*(g.t.y<0 ? -1 : 1)
-	x0 = exp(g.t.x)
-	y0 = log(abs(g.t.y)+1)*(g.t.y<0 ? -1 : 1)
-	x1 = g.attr.x-g.pnt.x
-	y1 = g.attr.y-g.pnt.y
-	x2 = g.pnt.x
-	y2 = g.pnt.y
-	r = sqrt(x1*x1+y1*y1)
-	x3 = x2+(x0*x1-y0*y1)/r
-	y3 = y2+(x0*y1+x1*y0)/r
-}
-
-function itEItoLI() {
-	x4 = g.t.x*2
-	y4 = g.t.y*2
-	x1 = g.attr.x
-	y1 = g.attr.y
-	x2 = g.pnt.x
-	y2 = g.pnt.y
-	r2 = sqrt(x2*x2+y2*y2)
-	t = atan2(y2,x2)
-	x5 = x1+pow(r2,x4)*exp(-y4*t)*cos(t*x4+y4*log(r2))
-	y5 = y1+pow(r2,x4)*exp(-y4*t)*sin(t*x4+y4*log(r2))
-	r0 = sqrt(x5*x5+y5*y5)
-	r1 = (1-1/(r0+1))/r0
-	x0 = x5*r1
-	y0 = y5*r1
-	x3 = (1-x0)*x1+y0*y1+x0*x2-y0*y2
-	y3 = (1-x0)*y1-y0*x1+x0*y2+y0*x2
-}
-
-function itEItoCD(){
-	x4 = g.t.x*2
-	y4 = g.t.y*2
-	x5 = g.attr.x
-	y5 = g.attr.y
-	x2 = g.pnt.x
-	y2 = g.pnt.y
-	r2 = sqrt(x2*x2+y2*y2)
-	t = atan2(y2,x2)
-	x6 = x5+pow(r2,x4)*exp(-y4*t)*cos(t*x4+y4*log(r2))
-	y6 = y5+pow(r2,x4)*exp(-y4*t)*sin(t*x4+y4*log(r2))
-	x0 = exp(x6)
-	y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
-	x0 = exp(x6)
-	y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
-	x1 = g.attr.x-g.pnt.x
-	y1 = g.attr.y-g.pnt.y
-	x2 = g.pnt.x
-	y2 = g.pnt.y
-	r = sqrt(x1*x1+y1*y1)
-	x3 = x2+(x0*x1-y0*y1)/r
-	y3 = y2+(x0*y1+x1*y0)/r
+	z = cCD(G.pnt,G.attr,cBL(G.t))
 }
 
 function itEI(){
-	x0 = g.t.x*2
-	y0 = g.t.y*2
-	x1 = g.attr.x
-	y1 = g.attr.y
-	x2 = g.pnt.x
-	y2 = g.pnt.y
-	r = sqrt(x2*x2+y2*y2)
-	t = atan2(y2,x2)
-	x3 = x1+pow(r,x0)*exp(-y0*t)*cos(t*x0+y0*log(r))
-	y3 = y1+pow(r,x0)*exp(-y0*t)*sin(t*x0+y0*log(r))
+	angleMode(DEGREES)
+	z=cLI(G.pnt,G.attr,cUD(cadd(G.attr,cpow(G.pnt,cscal(G.t,2)))))
+	angleMode(RADIANS)
+}
+
+function itEIB(){
+	angleMode(DEGREES)
+	z = cLI(G.pit,G.attr,cUD(cadd(G.attr,cexp(cmul(createVector(0,G.pnt.mag()),cBE(G.t))))))
+	angleMode(RADIANS)
 }
 
 function itMP(){
-	x1 = g.attr.x
-	y1 = g.attr.y
-	x2 = g.pnt.x
-	y2 = g.pnt.y
-	x3 = (x1+x2)/2
-	y3 = (y1+y2)/2
+	return cscal(cadd(G.pnt,G.attr),0.5)
 }
 
 function itPF(){
-	n=g.set.length
-	c=g.polyCs[g.seti]
-	z=zPows(n)
-	cx=c[0].x
-	cy=c[0].y
-	zx=z[0].x
-	zy=z[0].y
-	p=createVector(cx*zx-cy*zy,cx*zy+cy*zx)
-	for (i=1;i<n;i++){
-		cx=c[i].x
-		cy=c[i].y
-		zx=z[i].x
-		zy=z[i].y
-		p.add(createVector(cx*zx-cy*zy,cx*zy+cy*zx))
+	n=G.set.length
+	c=G.polyCs[G.seti]
+	zp=zPows(n)
+	z=createVector(0,0)
+	for (i=0;i<n;i++){
+		z.add(cmul(c[i],zp[i]))
 	}
-	x3=p.x
-	y3=p.y
-	//g.pnt=p
+}
+
+function itPN(){
+	n=G.set.length
+	c=G.polyCs[G.seti]
+	d=G.dpolyCs[G.seti]
+	z=zPows(n)
+	zp=zPows(n)
+	pc=createVector(0,0)
+	for (i=0;i<n;i++){
+		pc.add(cmul(c[i],zp[i]))
+	}
+	if (n-1){
+		pd=createVector(0,0)
+		for (i=0;i<n-1;i++){
+			pd.add(cmul(d[i],zp[i]))
+		}
+		z=csub(G.pnt,cdiv(pc,pd))
+	}
+}
+
+function itUp() {
+	G.pnt.x=z.x
+	G.pnt.y=z.y
 }
 
 function iterate() {
-	x3=0
-	y3=0
-	switch (g.e){
+	if(G.rech){
+		if((G.pnt.dist(G.attr)<=G.ZEROR)||(G.itsr>G.ITCAP)){
+			G.itsr=-1
+			regen()
+		}
+		G.itsr++
+	}
+	z=createVector(0,0)
+	G.pit=G.pnt.copy()
+	switch (G.e){
 		//Choose iteration algorithm
 		case 0:
 		//Linear Interpolation
@@ -182,39 +224,45 @@ function iterate() {
 			itCD()
 		break
 		case 2:
-		//Exponential Iteration -> Linear Interpolation
-			itEItoLI()
-		break
-		case 3:
 		//Polynomial Function
 			itPF()
+		break
+		case 3:
+			itPN()
+		break
+		case 4:
+			itEI()
+		break
+		case 5:
+			itEIB()
 		break
 		default:
 		//Midpoint
 			itMP()
 	}
-	g.pnt.x=x3
-	g.pnt.y=y3
-}
-
-function mod(a,b){
-	//Float modulo function
-	return a-b*int(a/b)
+	itUp()
 }
 
 function updPolyCs(){
-	if (g.e==3){
-		g.polyCs=[attrPolyCs(g.attrs[0])]
-		for (j=1;j<g.attrs.length;j++){
-			g.polyCs.push(attrPolyCs(g.attrs[j]))
+	if (G.e==2||G.e==3){
+		G.polyCs=[attrPolyCs(G.attrs[0])]
+		for (let j=1;j<G.attrs.length;j++){
+			G.polyCs.push(attrPolyCs(G.attrs[j]))
+		}
+	}
+	if (G.e==3){
+		G.dpolyCs=[dPolyC(G.polyCs[0])]
+		for (let j=1;j<G.attrs.length;j++){
+			G.dpolyCs.push(dPolyC(G.polyCs[j]))
 		}
 	}
 }
 
 function attrPolyCs(set){
-	c=[createVector(g.t.x,g.t.y)]
+	c=[]
+	cd=createVector(1,0)
 	for (n=0;n<set.length;n++){
-		c.push(0)
+		c.push(cd)
 		sr=set[n].x
 		si=set[n].y
 		for (i=n;i>0;i--){
@@ -230,15 +278,30 @@ function attrPolyCs(set){
 	return c
 }
 
+function dPolyC(pc){
+	let dpc=[];
+	for (i=0;i<pc.length-1;i++){
+		c=pc[i+1]
+		dpc.push(cscal(c,i+1))
+	}
+	return dpc
+}
+
 function zPows(n){
-	x=g.pnt.x
-	y=g.pnt.y
+	xt = G.t.x
+	yt = G.t.y
+	r = sqrt(xt*xt+yt*yt)
+	t = atan2(yt,xt)
+	tx = xt+pow(r,xt)*exp(-yt*t)*cos(t*xt+yt*log(r))
+	ty = yt+pow(r,xt)*exp(-yt*t)*sin(t*xt+yt*log(r))
+	x=G.pnt.x*tx-G.pnt.y*ty
+	y=G.pnt.y*tx+G.pnt.x*ty
 	zp=[createVector(1,0)]
 	if (n>0){
 		zp.push(createVector(x,y))
 	}
-	xp=x
-	yp=y
+	xp=x*G.t.x-y*G.t.y
+	yp=y*G.t.x+x*G.t.y
 	for (i=2;i<n;i++){
 		zp.push(createVector(xp*x-yp*y,xp*y+yp*x))
 	}
@@ -247,37 +310,41 @@ function zPows(n){
 
 function mout(x,y,a){
 	//Change variable point
-	switch(g.mfix){
+	z=cmul(createVector(x-G.x,y-G.y),G.rot)
+	switch(G.mfix){
 		case 1:
-			g.colx=(x-g.x)/g.scal
-			g.coly=-(y-g.y)/g.scal
+			G.colx=(x-G.x)/G.scal
+			G.coly=-(y-G.y)/G.scal
 		break
 		case 2:
-			g.pnt.x=(x-g.x)/g.scal
-			g.pnt.y=-(y-g.y)/g.scal
+			G.pnt.x=(x-G.x)/G.scal
+			G.pnt.y=-(y-G.y)/G.scal
 		break
 		case 3:
 			if (a==1){
-				g.trk.x=x/g.scal
-				g.trk.y=-y/g.scal
+				G.trk.x=x/G.scal
+				G.trk.y=-y/G.scal
 			}
 			else{
-				g.pnt.x+=(x-g.x)/g.scal
-				g.pnt.y+=-(y-g.y)/g.scal
+				G.pnt.x+=(x-G.x)/G.scal
+				G.pnt.y+=-(y-G.y)/G.scal
 			}
 		break
 		case 4:
-			g.regen=(1+(x-g.x)/g.scal)/2
-			g.prob=(1+-(y-g.y)/g.scal)/2
+			G.regen=(1+(x-G.x)/G.scal)/2
+			G.prob=(1+-(y-G.y)/G.scal)/2
 		break
 		case 5:
-			g.epnt.x=(x-g.x)/g.scal
-			g.epnt.y=-(y-g.y)/g.scal
+			G.epnt.x=(z.x)/G.scal
+			G.epnt.y=-(z.y)/G.scal
+		break
+		case 6:
+			G.rot.x=(x-G.x)/G.scal
+			G.rot.y=-(y-G.y)/G.scal
 		break
 		default:
-			g.t.x=(x-g.x)/g.scal
-			g.t.y=-(y-g.y)/g.scal
-			updPolyCs()
+			G.t.x=(x-G.x)/G.scal
+			G.t.y=-(y-G.y)/G.scal
 	}
 } 
 
@@ -285,30 +352,34 @@ function mget(){
 	//Get point data to vary
 	let x=0.0
 	let y=0.0
-	switch(g.mfix){
+	switch(G.mfix){
 		case 1:
-			x=g.colx*g.scal+g.x
-			y=g.coly*-g.scal+g.y
+			x=G.colx*G.scal+G.x
+			y=G.coly*-G.scal+G.y
 		break
 		case 2:
-			x=g.pnt.x*g.scal+g.x
-			y=g.pnt.y*-g.scal+g.y
+			x=G.pnt.x*G.scal+G.x
+			y=G.pnt.y*-G.scal+G.y
 		break
 		case 3:
-			x=g.trk.x
-			y=g.trk.y
+			x=G.trk.x
+			y=G.trk.y
 		break
 		case 4:
-			x=(g.regen*2-1)*g.scal+g.x
-			y=-(g.prob*-2+1)*g.scal+g.y
+			x=(G.regen*2-1)*G.scal+G.x
+			y=-(G.prob*-2+1)*G.scal+G.y
 		break
 		case 5:
-			x=g.epnt.x*g.scal+g.x
-			y=g.epnt.y*-g.scal+g.y
+			x=G.epnt.x*G.scal+G.x
+			y=G.epnt.y*-G.scal+G.y
+		break
+		case 6:
+			x=G.rot.x*G.scal+G.x
+			y=G.rot.y*-G.scal+G.y
 		break
 		default:
-			x=g.t.x*g.scal+g.x
-			y=g.t.y*-g.scal+g.y
+			x=G.t.x*G.scal+G.x
+			y=G.t.y*-G.scal+G.y
 	}
 	return createVector(x,y)
 }
@@ -316,23 +387,23 @@ function mget(){
 function draw() {
 	//Main Draw loop
 	background(0)
-	translate(g.x,g.y)
-	let tepnt=g.attrs[g.addr]
-	g.epnt=tepnt[tepnt.length-1]
-	if (g.edit) {
+	translate(G.x,G.y)
+	let tepnt=G.attrs[G.addr]
+	G.epnt=tepnt[tepnt.length-1]
+	if (G.edit) {
 		//Edit mode
-		len = g.attrs.length
+		len = G.attrs.length
 		brk = []
 		brek = 1
 		for (let i=0;i<len;i++) {
-			attrs = g.attrs[i]
+			attrs = G.attrs[i]
 			len2 = attrs.length
 			for (let k=0;k<len2;k++) {
 				attr = attrs[k]
 				brek = 1
 				if(mouseIsPressed){
-					tempos = createVector(mouseX-g.x,-mouseY+g.y).div(g.scal)
-					if (g.scal*tempos.dist(attr)<g.rad) {
+					tempos = cdiv(createVector(mouseX-G.x,-mouseY+G.y).div(G.scal),G.rot)
+					if (G.scal*tempos.dist(attr)<G.rad) {
 						if (attrs.length>1){ 
 								brk.push([i,k])
 								brek = 0
@@ -341,88 +412,89 @@ function draw() {
 				}
 				if(brek){
 					fill(360*i/len,360,360)
-					ellipse(attr.x*g.scal,-attr.y*g.scal,g.rad,g.rad)
+					ren=cmul(attr,G.rot)
+					ellipse(ren.x*G.scal,-ren.y*G.scal,G.rad,G.rad)
 				}
 			}
 		}
 		for (let i = 0; i<brk.length;i++){
-		g.attrs[brk[i][0]].splice(brk[i][1],1)
+		G.attrs[brk[i][0]].splice(brk[i][1],1)
 		}
 	}
 	else { 
 		//Render mode
-		for (let i = 0;i<g.reps/(g.mem+(g.mem==0));i++){
-			if(random()>g.regen){
+		for (let i = 0;i<G.REPS/(G.mem+(G.mem==0));i++){
+			if(random()>G.regen){
 				regen()
 			}
-			g.ph=g.pnt.copy()
-			ph = g.pnt.copy()
+			G.ph = G.pnt.copy()
+			ph = G.pnt.copy()
 			if(mouseIsPressed){
 				mout(mouseX,mouseY,0)
 			}
-			g.pnt.add(g.trk) 
-			if(g.ren){
-			for(let m=0;m<(g.mem+(g.mem==0));m++){
-			if (random(1)>g.prob){
-				if((g.excl!=0) && g.attrs.length>1){
-					_set = []
-					ind = g.attrs.length
-					for (let k=0;k<g.attrs.length;k++){
-						a=g.attrs[k]
-						if(a==g.set){
+			G.pnt.add(G.trk) 
+			if(G.ren){
+			for(let m=0;m<(G.mem+(G.mem==0));m++){
+			if (random(1)>G.prob){
+				if((G.excl!=0) && G.attrs.length>1){
+					let _set = []
+					ind = G.attrs.length
+					for (let k=0;k<G.attrs.length;k++){
+						a=G.attrs[k]
+						if(a==G.set){
 						ind = k
 						}
 					}
-					for (let k=0;k<g.attrs.length;k++){
-						a=g.attrs[k]
-						if(k!=mod(ind+g.excl-1,g.attrs.length+g.errl+(g.excl==1))){
-							_set.push(g.attrs[k])
+					for (let k=0;k<G.attrs.length;k++){
+						a=G.attrs[k]
+						if(k!=(ind+G.excl-1)%(G.attrs.length+G.errl+(G.excl==1))){
+							_set.push(G.attrs[k])
 						}
 					}
-					g.seti = floor(random(0,_set.length))
-					g.set = _set[g.seti]
+					G.seti = floor(random(0,_set.length))
+					G.set = _set[G.seti]
 				}
 				else{
-					g.seti = floor(random(0,g.attrs.length))
-					g.set = g.attrs[g.seti]
+					G.seti = floor(random(0,G.attrs.length))
+					G.set = G.attrs[G.seti]
 				}
 			}
-			if((g.excn!=0) && g.set.length>1){
-				_set = []
-				ind = g.set.length
-				for (let k=0;k<g.set.length;k++){
-					a=g.set[k]
-					if(a==g.attr){
+			if((G.excn!=0) && G.set.length>1){
+				let _set = []
+				ind = G.set.length
+				for (let k=0;k<G.set.length;k++){
+					a=G.set[k]
+					if(a==G.attr){
 					ind = k
 					}
 				}
-				for (let k=0;k<g.set.length;k++){
-					a=g.set[k]
-					if(k!=mod(ind+g.excn-1,g.set.length+g.errn+(g.excn==1))){
-					_set.push(g.set[k])
+				for (let k=0;k<G.set.length;k++){
+					a=G.set[k]
+					if(k!=(ind+G.excn-1)%(G.set.length+G.errn+(G.excn==1))){
+					_set.push(G.set[k])
 					}
 				}
-				g.attr = random(_set)
+				G.attr = random(_set)
 			}
 			else{
-				g.attr = random(g.set)
+				G.attr = random(G.set)
 			}
 			iterate()
 		    }
-			if(g.mem==0){
-				ph=g.pnt.copy()
+			if(G.mem==0){
+				ph=G.pnt.copy()
 			}
-			g.ph=g.pnt.copy()
-			let cp=g.pnt.copy().sub(createVector(g.colx,g.coly))
-			let cph=ph.sub(createVector(g.colx,g.coly))
-			switch(g.col){
+			G.ph=G.pnt.copy()
+			let cp=G.pnt.copy().sub(createVector(G.colx,G.coly))
+			let cph=ph.sub(createVector(G.colx,G.coly))
+			switch(G.col){
 				//Choose colour
 				case 1:
-					h = cph.heading()
+					h = degrees(cph.heading())
 					if (h<0){
 						h+=360
 					}
-					g.g.fill(h,360,360)
+					G.graph.fill(h,360,360)
 					break
 				case 2:
 					h = 180*cph.mag()
@@ -432,14 +504,14 @@ function draw() {
 					if (h>360){
 						h-=360
 					}
-					g.g.fill(h,360,360)
+					G.graph.fill(h,360,360)
 					break
 				case 3:
-					h = cp.heading()-cph.heading()
+					h = degrees(cp.heading()-cph.heading())
 					if (h<0){
 						h+=360
 					}
-					g.g.fill(h,360,360)
+					G.graph.fill(h,360,360)
 					break
 				case 4:
 					h = 180*(cp.mag()-cph.mag())
@@ -449,36 +521,29 @@ function draw() {
 					if (h>360){
 						h-=360
 					}
-					g.g.fill(h,360,360)
+					G.graph.fill(h,360,360)
 					break
 				default:
-					g.g.fill(360)
+					G.graph.fill(360)
 				}
-			g.g.ellipse(g.pnt.x*g.scal+g.x,-g.pnt.y*g.scal+g.y,0.25,0.25)
+				if(G.noren){
+					G.noren--
+				}
+				else{
+					ren = cmul(G.pnt,G.rot)
+					G.graph.ellipse(ren.x*G.scal+G.x,-ren.y*G.scal+G.y,G.DR,G.DR)
+				}
 			}
 		}
-		image(g.g,-g.x,-g.y,width,height)
+		image(G.graph,-G.x,-G.y,width,height)
 	}
-}
-
-function windowResized() {
-	//Event for when window is resized
-	resizeCanvas(windowWidth*g.cr,windowHeight*g.cr)
-	t = min(width,height)/(1080*g.cr)
-	g.g = createGraphics(width,height)
-	g.scal = g.scali*t
-	g.rad = g.radi*t
-	g.x = width/2
-	g.y = height/2
-	textSize(20*t) 
-	g.g.colorMode(HSB,360)
-	g.g.noStroke()
 }
 
 function regen() {
 	//Reset iterated point to a random value
-	g.pnt.x = 2*random()-1
-	g.pnt.y = 2*random()-1
+	G.pnt.x = 2*random()-1
+	G.pnt.y = 2*random()-1
+	G.noren=G.NORENS
 }
 
 function keyPressed() {
@@ -486,83 +551,87 @@ function keyPressed() {
 	print(keyCode)
 	if (keyCode==32){
 		//space
-		g.edit = !g.edit
+		G.edit = !G.edit
 		regen()
-		g.g.clear()
+		G.graph.clear()
 	}
 	let l=mget()
 	if (keyCode==87){
 		//w
-		mout(l.x,l.y-g.scal/20,1)
+		mout(l.x,l.y-G.scal/20,1)
 	}
 	if (keyCode==65){
 		//a
-		mout(l.x-g.scal/20,l.y,1)
+		mout(l.x-G.scal/20,l.y,1)
 	}
 	if (keyCode==83){
 		//s
-		mout(l.x,l.y+g.scal/20,1)
+		mout(l.x,l.y+G.scal/20,1)
 	}
 	if (keyCode==68){
 		//d
-		mout(l.x+g.scal/20,l.y,1)
+		mout(l.x+G.scal/20,l.y,1)
 	}
 	if (keyCode==192){
 		//`
-		g.mfix=mod(g.mfix+1,6)
+		G.mfix=(G.mfix+1)%G.MMFIX
 	}
 	if (keyCode==49){
 		//1
-		g.mfix=0
+		G.mfix=0
 	}
 	if (keyCode==50){
 		//2
-		g.mfix=1
+		G.mfix=1
 	}
 	if (keyCode==51){
 		//3
-		g.mfix=2
+		G.mfix=2
 	}
 	if (keyCode==52){
 		//4
-		g.mfix=3
+		G.mfix=3
 	}
 	if (keyCode==53){
 		//5
-		g.mfix=4
+		G.mfix=4
 	}
 	if (keyCode==54){
 		//6
-		g.mfix=5
+		G.mfix=5
+	}
+	if (keyCode==55){
+		//7
+		G.mfix=6
 	}
 	if (keyCode==16){
 		//shift
-		g.shift=!g.shift
+		G.shift=!G.shift
 	}
-	if (g.edit){
+	if (G.edit){
 		switch (keyCode){
 			case 37:
 			//left
-			if (g.addr){
-				g.addr--
+			if (G.addr){
+				G.addr--
 			}
 			break
 			case 38:
 			//up
-			g.attrs.push([])
+			G.attrs.push([createVector(0,0)])
 			break
 			case 39:
 			//right
-			if (g.addr<g.attrs.length-1){
-				g.addr++
+			if (G.addr<G.attrs.length-1){
+				G.addr++
 			}
 			break
 			case 40:
 			//down
-			if (g.attrs.length>1){
-				g.attrs.pop()
-				if (g.addr>=g.attrs.length){
-					g.addr=g.attrs.length-1
+			if (G.attrs.length>1){
+				G.attrs.pop()
+				if (G.addr>=G.attrs.length){
+					G.addr=G.attrs.length-1
 				}
 			}
 			break
@@ -574,64 +643,68 @@ function keyPressed() {
 		if (keyCode==82){
 			//r
 			regen()
-			g.g.clear()
+			G.graph.clear()
 			
 		}
 		if (keyCode==13){
 			//enter
-			saveCanvas('compiterator.png')
+			customSave()
 		}
 		if (keyCode==81){
 			//q
-			g.ren=!g.ren
+			G.ren=!G.ren
 		}
 		if (keyCode==66){
 			//b
-			g.col++
-			if(g.col>=5){
-			g.col=0
+			G.col++
+			if(G.col>=5){
+			G.col=0
 			}
-			g.g.clear()
+			G.graph.clear()
 		}
 		if (keyCode==69){
 			//e
-			g.e=mod(g.e+1,g.me)
+			G.e=(G.e+1)%G.ME
 		}
 		if (keyCode==72){
 			//h
-			for (let i=0;i<g.attrs.length;i++){
-				g.attrs[i]=shuffle(g.attrs[i])
+			for (let i=0;i<G.attrs.length;i++){
+				G.attrs[i]=shuffle(G.attrs[i])
 			}
 		}
 		if (keyCode==75){
 			//k
-			g.attrs = shuffle(g.attrs)
+			G.attrs = shuffle(G.attrs)
 		}
 		if (keyCode==78){
 			//n
-			if(g.shift){
-				g.errn=!g.errn
+			if(G.shift){
+				G.errn=!G.errn
 			}
 			else{
-				g.excn=mod(g.excn+1,g.set.length+2)
+				G.excn=(G.excn+1)%(G.set.length+2)
 			}
 		}
 		if (keyCode==77){
 			//m
-			if(g.shift){
-				g.errl=!g.errl
+			if(G.shift){
+				G.errl=!G.errl
 			}
 			else{
-				g.excl=mod(g.excl+1,g.attrs.length+2)
+				G.excl=(G.excl+1)%(G.attrs.length+2)
 			}
 		}
-		if (keyCode==188&&g.mem){
+		if (keyCode==85){
+			//u
+			G.rech=!G.rech
+		}
+		if (keyCode==188&&G.mem){
 			//<,
-			g.mem--
+			G.mem--
 		}
 		if (keyCode==190){
 			//>.
-			g.mem++
+			G.mem++
 		}
 	}
 	updPolyCs()
@@ -639,8 +712,60 @@ function keyPressed() {
 
 function mouseClicked(){
 	//Separate event for alt clicking in edit mode
-	if (keyCode==18 && keyIsPressed && g.edit){
-		g.attrs[g.addr].push(createVector(mouseX-g.x,g.y-mouseY).div(g.scal))
+	if (keyCode==18 && keyIsPressed && G.edit){
+		G.attrs[G.addr].push(cdiv(createVector(mouseX-G.x,G.y-mouseY).div(G.scal),G.rot))
 		updPolyCs()
 	}
 }
+
+function cprint(u){
+	return '{'+u.x+','+u.y+'}'
+}
+
+function customSave(){
+	let savStr="CIT ["
+	savStr+=[G.e,cprint(G.t),cprint(G.rot),G.col,G.mem,G.rech]+','
+	savStr+=[G.shift,(G.shift) ? cprint(createVector(G.excn,G.excl)) : cprint(createVector(G.errn,G.errl))]
+	saveCanvas(savStr+"].png")
+}
+
+//Hall of old functions
+
+//function itEI(){
+	//x0 = G.t.x*2
+	//y0 = G.t.y*2
+	//x1 = G.attr.x
+	//y1 = G.attr.y
+	//x2 = G.pnt.x
+	//y2 = G.pnt.y
+	//r = sqrt(x2*x2+y2*y2)
+	//t = atan2(y2,x2)
+	//x = x1+pow(r,x0)*exp(-y0*t)*cos(t*x0+y0*log(r))
+	//y = y1+pow(r,x0)*exp(-y0*t)*sin(t*x0+y0*log(r))
+//}
+
+//function itPD(){
+//	n=G.set.length
+//	d=G.dpolyCs[G.seti]
+//	z=zPows(n)
+//	zx=z[0].x
+//	zy=z[0].y
+//	if (n-1){
+//		dx=d[0].x
+//		dy=d[0].y
+//		p=createVector(dx*zx-dy*zy,dx*zy+dy*zx)
+//		for (i=1;i<n-1;i++){
+//			dx=d[i].x
+//			dy=d[i].y
+//			zx=z[i].x
+//			zy=z[i].y
+//			p.add(createVector(dx*zx-dy*zy,dx*zy+dy*zx))
+//		}
+//		x=p.x
+//		y=p.y
+//	}
+//	else{
+//		x=G.pnt.x
+//		y=G.pnt.y
+//	}
+//}

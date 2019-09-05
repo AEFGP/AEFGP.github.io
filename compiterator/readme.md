@@ -1,3 +1,9 @@
+[Visit Live Version](https://aefgp.github.io/compiterator/index.html)
+
+Compiterator Version 1.9 Beta
+
+DOCUMENTATION UPDATED FOR 1.8.2, NOT UP TO DATE FOR 1.9
+
 ## Controls
 
 * `space`: Toggle RENDER/EDIT modes     
@@ -55,9 +61,9 @@ Pressing `Q` toggles the rendering so that no changes occur, useful for pausing 
 
 Pressing `E` will cycle the different algorithms for the chaos game, it will not clear the screen.   
 1. linear interpolation algorithm.
-1. constant distance algorithm.    
-1. linear interpolation algorithm with exponential sum output parameter
-1. Polynomial function iteration.
+2. constant distance algorithm.    
+3. linear interpolation algorithm with exponential sum output parameter
+4. Polynomial function iteration.
  
 Pressing `~` will cycle the different mouse-selector modes.     
 The mouse (or `WASD` keys) will set/move the point that controls the:   
@@ -100,6 +106,6 @@ The parameter, based on the screen position, is mapped from the whole plane into
 1. The iterated point moves by a rotation of a constant complex vector towards the chosen node.
 The parameter, based on the screen position, is mapped in the reals by an exponential and in the imaginary by a branched logarithm.
 1. The iterated point moves on a linear interpolation to the chosen node with a complex parameter of the output of the sum of a complex expoentiation function and the chosen node.
-1. The iterated point moves to the output of a polynomial function that has the current layer as zeroes and an initial constant of the complex parameter.    
+2. The iterated point moves to the output of a polynomial function that has the current layer as zeroes and multiplied by a complex parameter.    
 
 Sometimes the polynomial can escape the canvas, simply refresh the canvas or enable the randomisation.
