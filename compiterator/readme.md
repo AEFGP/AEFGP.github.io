@@ -1,8 +1,6 @@
 [Visit Live Version](https://aefgp.github.io/compiterator/index.html)
 
-Compiterator Version 1.9 Beta
-
-DOCUMENTATION UPDATED FOR 1.8.2, NOT UP TO DATE FOR 1.9
+Compiterator Version 1.9
 
 ## Controls
 
@@ -16,27 +14,31 @@ DOCUMENTATION UPDATED FOR 1.8.2, NOT UP TO DATE FOR 1.9
 * `left arrow`: Previous layer   
 --RENDER--   
 * `Q`: Toggle render (freeze)
-* `R`: Clear render
-* `W`: Move mouse-selector point up
-* `A`: Move mouse-selector point left
-* `S`: Move mouse-selector point down
-* `D`: Move mouse-selector point right
-* `1`: Change to complex parameter mouse-selector mode
-* `2`: Change to colour origin mouse-selector mode
-* `3`: Change to iterated point mouse-selector mode
-* `4`: Change to iterated cluster mouse-selector mode
-* `5`: Change to probability mouse-selector mode
-* `6`: Change to latest node mouse-selector mode
-* `~`: Cycle mouse-selector mode
+* `R`: Clear render (and randomise point)
+* `U`: Toggle max iteration checking
 * `E`: Cycle iteration mode
-* `B`: Cycle colour mode (clears window also) 
 * `N`: Cycle node exclusion
 * `M`: Cycle layer exclusion
 * `H`: Jumble node order
 * `K`: Jumble layer order
+* `shift`: Toggle toggling of N and M to their broken functions in prior versions 
+* `~`: Cycle mouse-selector mode
+* `W`: Move mouse-selector point up
+* `A`: Move mouse-selector point left
+* `S`: Move mouse-selector point down
+* `D`: Move mouse-selector point right
+* `1`: Complex parameter mouse-selector mode
+* `2`: Iterated point mouse-selector mode
+* `3`: Iterated cluster mouse-selector mode
+* `4`: Latest node mouse-selector mode
+* `5`: Probability mouse-selector mode
+* `6`: Render origin mouse-selector mode
+* `7`: Render rotation mouse-selector mode
+* `8`: Colour origin mouse-selector mode
+* `9`: Colour rotation mouse-selector mode
 * `<`: Decrease colour cycle depth
 * `>`: Increase colour cycle depth
-* `shift`: Toggle toggling of N and M to their broken functions in prior versions (read the instructions).
+* `B`: Cycle colour mode
 * `enter`: Save Image (Right click the canvas and save manually if this doesn't work)
 
 ## Instructions
@@ -62,17 +64,23 @@ Pressing `Q` toggles the rendering so that no changes occur, useful for pausing 
 Pressing `E` will cycle the different algorithms for the chaos game, it will not clear the screen.   
 1. linear interpolation algorithm.
 2. constant distance algorithm.    
-3. linear interpolation algorithm with exponential sum output parameter
-4. Polynomial function iteration.
+3. Polynomial function iteration.
+4. Polynomial Newton's method iteration.
+5. linear interpolation algorithm with exponential sum output parameter
+6. linear interpolation algorithm with pseudo-exponential sum output parameter
  
 Pressing `~` will cycle the different mouse-selector modes.     
-The mouse (or `WASD` keys) will set/move the point that controls the:   
-1. Complex parameter for the various algorithms.
-2. Location of the origin for colouring.
-3. Location of the iterated point, can be used to demonstrate the attractor properties.
-4. Point at which the plot is drawn towards, also useful to demonstrate the attractors.
-5. Game probabilities, with the probability of iterated point resetting as x and layer swapping as y respectively.
-6. Most recently created node, mostly for making small adjustments in the exponential sum mode.    
+The mouse (or `WASD` keys) will set/move the point that controls different parameters:   
+1. Complex parameter for the various iteration modes.
+1. Location of the iterated point, can be used to demonstrate the attractor properties.
+1. Point at which the plot is drawn towards, also useful to demonstrate the attractors.
+1. Most recently created node, useful for making small adjustments to the shape.
+2. Probabilities, with the probability of iterated point resetting as x and layer swapping as y respectively.
+3. Location of the origin of the plot.
+4. Rotation & scaling of the plot.
+5. Location of the origin for colouring.
+6. Rotation & scaling of the colour map.
+
 
 You can budge the point specified by the input settings that would otherwise be set by the mouse a small distance from its current position by pressing `WASD` in the way you would expect, `W` = up, `A` = left, `S` = down, `D` = right.    
 This can be used to observe how small changes in the current state effect the outcome without having to locate the old point with the mouse.
@@ -100,12 +108,12 @@ This program completes 500 iterations a frame.
 What layers and nodes can be selected in relevance to the previously selected layers and nodes can be changed.  
 The image is coloured based on previous iterations to highlight the fractal elements of the image such as the self-similarities and symmetries.       
 
-There are three algorithms for the iteration:
+There are four algorithms for the iteration with sensible definitions:
 1. The iterated point moves on a linear interpolation to the chosen node with a complex parameter.     
 The parameter, based on the screen position, is mapped from the whole plane into the unit disk.
 1. The iterated point moves by a rotation of a constant complex vector towards the chosen node.
 The parameter, based on the screen position, is mapped in the reals by an exponential and in the imaginary by a branched logarithm.
-1. The iterated point moves on a linear interpolation to the chosen node with a complex parameter of the output of the sum of a complex expoentiation function and the chosen node.
-2. The iterated point moves to the output of a polynomial function that has the current layer as zeroes and multiplied by a complex parameter.    
+1. The iterated point moves to the output of a polynomial function that has the current layer as zeroes and multiplied by a complex parameter.    
+1. The iterated point moves according to applications of Newton's method over the same polynomial function as above.
 
-Sometimes the polynomial can escape the canvas, simply refresh the canvas or enable the randomisation.
+Sometimes the polynomial can escape the canvas, simply refresh the canvas or enable the randomisation or max iterations (max iterations is enabled by default)

@@ -3,14 +3,18 @@ let G = {} //cross-canvas global container
 function setup() {
 	//Stuff you can change
 	G.t = createVector(1,0) //Iteration complex parameter's initial value
-	G.rot = createVector(1,0) //Screen rotation complex parameter's initial value
-	G.e = 0 // iteration mode
+	G.pro = createVector(1,0.5) //Probabilities of regen and layer reselection
+	G.rro = createVector(1,0) //Render Rotation
+	G.ror = createVector(0,0) //Render Origin
+	G.cro = createVector(1,0) //Colour Rotation
+	G.cor = createVector(0,0) //Colour Origin
+	G.mode = 0 // iteration mode
 	G.col=1 // colour mode
 	G.mem=1 // colour memory
 	G.rech=1  // regen check
 	G.shift=0 // exclusion mode shift toggle
-	G.excl=0 // 
 	G.excn=0 // 
+	G.excl=0 // 
 	G.errn=0 //
 	G.errl=0 // 
 
@@ -27,10 +31,7 @@ function setup() {
 	]
 
 	G.REPS = 500 //Number of iteration repetitions per frame
-	G.prob = 0.5 //Probability of layer reselect
-	G.regen = 1 //Probability of not regen
 	G.ITCAP = 20000 //Number of iterations until regen
-	G.ZEROR = 0 // Distance to attractor threshold for regen
 	G.NORENS= 3 //Number of points that are not rendered after each regen
 
 	//Stuff you shouldn't change
@@ -50,16 +51,17 @@ function setup() {
 	G.rad = G.RADI*smallestAspect
 	G.x = width/2
 	G.y = height/2
+	G.MMODE = 6 // max iteration modes
+	G.MMFIX = 9 // max number of mouse fix modes
+	//Initialisation
 	G.pnt = createVector(0,0)
 	G.pit = createVector(0,0)
 	G.trk = createVector(0,0)
+	G.mfix=0 // mouse fix mode
 	G.set=G.attrs[0]
 	G.seti=0 // selected layer index
 	G.addr=0 // selected node in layer
 	G.edit=1 // edit/render toggle
-	G.ME = 6 // max iteration modes
-	G.mfix=0 // mouse fix mode
-	G.MMFIX=7 // max number of mouse fix modes
 	G.ren=1 // render loop toggle
 	G.itsr=0  // iterations since regen
 	G.noren=0  // iterations to not render
@@ -154,15 +156,13 @@ function itCD() {
 }
 
 function itEI(){
-	angleMode(DEGREES)
+	//angleMode(DEGREES)
 	z=cLI(G.pnt,G.attr,cUD(cadd(G.attr,cpow(G.pnt,cscal(G.t,2)))))
-	angleMode(RADIANS)
 }
 
 function itEIB(){
-	angleMode(DEGREES)
+	//angleMode(DEGREES)
 	z = cLI(G.pit,G.attr,cUD(cadd(G.attr,cexp(cmul(createVector(0,G.pnt.mag()),cBE(G.t))))))
-	angleMode(RADIANS)
 }
 
 function itMP(){
@@ -205,7 +205,7 @@ function itUp() {
 
 function iterate() {
 	if(G.rech){
-		if((G.pnt.dist(G.attr)<=G.ZEROR)||(G.itsr>G.ITCAP)){
+		if(G.itsr>G.ITCAP){
 			G.itsr=-1
 			regen()
 		}
@@ -213,7 +213,7 @@ function iterate() {
 	}
 	z=createVector(0,0)
 	G.pit=G.pnt.copy()
-	switch (G.e){
+	switch (G.mode){
 		//Choose iteration algorithm
 		case 0:
 		//Linear Interpolation
@@ -244,13 +244,13 @@ function iterate() {
 }
 
 function updPolyCs(){
-	if (G.e==2||G.e==3){
+	if (G.mode==2||G.mode==3){
 		G.polyCs=[attrPolyCs(G.attrs[0])]
 		for (let j=1;j<G.attrs.length;j++){
 			G.polyCs.push(attrPolyCs(G.attrs[j]))
 		}
 	}
-	if (G.e==3){
+	if (G.mode==3){
 		G.dpolyCs=[dPolyC(G.polyCs[0])]
 		for (let j=1;j<G.attrs.length;j++){
 			G.dpolyCs.push(dPolyC(G.polyCs[j]))
@@ -310,17 +310,13 @@ function zPows(n){
 
 function mout(x,y,a){
 	//Change variable point
-	z=cmul(createVector(x-G.x,y-G.y),G.rot)
+	z=cmul(createVector(x-G.x,y-G.y),G.rro)
 	switch(G.mfix){
 		case 1:
-			G.colx=(x-G.x)/G.scal
-			G.coly=-(y-G.y)/G.scal
-		break
-		case 2:
 			G.pnt.x=(x-G.x)/G.scal
 			G.pnt.y=-(y-G.y)/G.scal
 		break
-		case 3:
+		case 2:
 			if (a==1){
 				G.trk.x=x/G.scal
 				G.trk.y=-y/G.scal
@@ -330,17 +326,29 @@ function mout(x,y,a){
 				G.pnt.y+=-(y-G.y)/G.scal
 			}
 		break
+		case 3:
+			G.qnt.x=(z.x)/G.scal
+			G.qnt.y=-(z.y)/G.scal
+		break
 		case 4:
-			G.regen=(1+(x-G.x)/G.scal)/2
-			G.prob=(1+-(y-G.y)/G.scal)/2
+			G.pro.x=(1+(x-G.x)/G.scal)/2
+			G.pro.y=(1+-(y-G.y)/G.scal)/2
 		break
 		case 5:
-			G.epnt.x=(z.x)/G.scal
-			G.epnt.y=-(z.y)/G.scal
+			G.ror.x=(x-G.x)/G.scal
+			G.ror.y=-(y-G.y)/G.scal
 		break
 		case 6:
-			G.rot.x=(x-G.x)/G.scal
-			G.rot.y=-(y-G.y)/G.scal
+			G.rro.x=(x-G.x)/G.scal
+			G.rro.y=-(y-G.y)/G.scal
+		break
+		case 7:
+			G.cor.x=(x-G.x)/G.scal
+			G.cor.y=-(y-G.y)/G.scal
+		break
+		case 8:
+			G.cro.x=(x-G.x)/G.scal
+			G.cro.y=-(y-G.y)/G.scal
 		break
 		default:
 			G.t.x=(x-G.x)/G.scal
@@ -354,28 +362,37 @@ function mget(){
 	let y=0.0
 	switch(G.mfix){
 		case 1:
-			x=G.colx*G.scal+G.x
-			y=G.coly*-G.scal+G.y
-		break
-		case 2:
 			x=G.pnt.x*G.scal+G.x
 			y=G.pnt.y*-G.scal+G.y
 		break
-		case 3:
+		case 2:
 			x=G.trk.x
 			y=G.trk.y
 		break
+		case 3:
+			x=G.qnt.x*G.scal+G.x
+			y=G.qnt.y*-G.scal+G.y
+			
+		break
 		case 4:
-			x=(G.regen*2-1)*G.scal+G.x
-			y=-(G.prob*-2+1)*G.scal+G.y
+			x=(G.pro.x*2-1)*G.scal+G.x
+			y=-(G.pro.y*-2+1)*G.scal+G.y
 		break
 		case 5:
-			x=G.epnt.x*G.scal+G.x
-			y=G.epnt.y*-G.scal+G.y
+			x=G.ror.x*G.scal+G.x
+			y=G.ror.y*-G.scal+G.y
 		break
 		case 6:
-			x=G.rot.x*G.scal+G.x
-			y=G.rot.y*-G.scal+G.y
+			x=G.rro.x*G.scal+G.x
+			y=G.rro.y*-G.scal+G.y
+		break
+		case 7:
+			x=G.cor.x*G.scal+G.x
+			y=G.cor.y*-G.scal+G.y
+		break
+		case 8:
+			x=G.cro.x*G.scal+G.x
+			y=G.cro.y*-G.scal+G.y
 		break
 		default:
 			x=G.t.x*G.scal+G.x
@@ -389,7 +406,7 @@ function draw() {
 	background(0)
 	translate(G.x,G.y)
 	let tepnt=G.attrs[G.addr]
-	G.epnt=tepnt[tepnt.length-1]
+	G.qnt=tepnt[tepnt.length-1]
 	if (G.edit) {
 		//Edit mode
 		len = G.attrs.length
@@ -402,7 +419,7 @@ function draw() {
 				attr = attrs[k]
 				brek = 1
 				if(mouseIsPressed){
-					tempos = cdiv(createVector(mouseX-G.x,-mouseY+G.y).div(G.scal),G.rot)
+					tempos = cdiv(csub(createVector(mouseX-G.x,-mouseY+G.y).div(G.scal),G.ror),G.rro)
 					if (G.scal*tempos.dist(attr)<G.rad) {
 						if (attrs.length>1){ 
 								brk.push([i,k])
@@ -412,7 +429,7 @@ function draw() {
 				}
 				if(brek){
 					fill(360*i/len,360,360)
-					ren=cmul(attr,G.rot)
+					ren=cadd(cmul(attr,G.rro),G.ror)
 					ellipse(ren.x*G.scal,-ren.y*G.scal,G.rad,G.rad)
 				}
 			}
@@ -424,7 +441,7 @@ function draw() {
 	else { 
 		//Render mode
 		for (let i = 0;i<G.REPS/(G.mem+(G.mem==0));i++){
-			if(random()>G.regen){
+			if(random()>G.pro.x){
 				regen()
 			}
 			G.ph = G.pnt.copy()
@@ -435,7 +452,7 @@ function draw() {
 			G.pnt.add(G.trk) 
 			if(G.ren){
 			for(let m=0;m<(G.mem+(G.mem==0));m++){
-			if (random(1)>G.prob){
+			if (random(1)>G.pro.y){
 				if((G.excl!=0) && G.attrs.length>1){
 					let _set = []
 					ind = G.attrs.length
@@ -485,8 +502,8 @@ function draw() {
 				ph=G.pnt.copy()
 			}
 			G.ph=G.pnt.copy()
-			let cp=G.pnt.copy().sub(createVector(G.colx,G.coly))
-			let cph=ph.sub(createVector(G.colx,G.coly))
+			let cp=cdiv(G.pnt.copy().sub(createVector(G.cor.x,G.cor.y)),G.cro)
+			let cph=cdiv(ph.sub(createVector(G.cor.x,G.cor.y)),G.cro)
 			switch(G.col){
 				//Choose colour
 				case 1:
@@ -530,7 +547,7 @@ function draw() {
 					G.noren--
 				}
 				else{
-					ren = cmul(G.pnt,G.rot)
+					ren = cadd(cmul(G.pnt,G.rro),G.ror)
 					G.graph.ellipse(ren.x*G.scal+G.x,-ren.y*G.scal+G.y,G.DR,G.DR)
 				}
 			}
@@ -552,8 +569,8 @@ function keyPressed() {
 	if (keyCode==32){
 		//space
 		G.edit = !G.edit
-		regen()
 		G.graph.clear()
+		regen()
 	}
 	let l=mget()
 	if (keyCode==87){
@@ -603,6 +620,14 @@ function keyPressed() {
 	if (keyCode==55){
 		//7
 		G.mfix=6
+	}
+	if (keyCode==56){
+		//8
+		G.mfix=7
+	}
+	if (keyCode==57){
+		//9
+		G.mfix=8
 	}
 	if (keyCode==16){
 		//shift
@@ -660,11 +685,10 @@ function keyPressed() {
 			if(G.col>=5){
 			G.col=0
 			}
-			G.graph.clear()
 		}
 		if (keyCode==69){
 			//e
-			G.e=(G.e+1)%G.ME
+			G.mode=(G.mode+1)%G.MMODE
 		}
 		if (keyCode==72){
 			//h
@@ -713,7 +737,7 @@ function keyPressed() {
 function mouseClicked(){
 	//Separate event for alt clicking in edit mode
 	if (keyCode==18 && keyIsPressed && G.edit){
-		G.attrs[G.addr].push(cdiv(createVector(mouseX-G.x,G.y-mouseY).div(G.scal),G.rot))
+		G.attrs[G.addr].push(cdiv(csub(createVector(mouseX-G.x,G.y-mouseY).div(G.scal),G.ror),G.rro))
 		updPolyCs()
 	}
 }
@@ -724,7 +748,7 @@ function cprint(u){
 
 function customSave(){
 	let savStr="CIT ["
-	savStr+=[G.e,cprint(G.t),cprint(G.rot),G.col,G.mem,G.rech]+','
+	savStr+=[G.mode,cprint(G.t),cprint(G.rro),G.col,G.mem,G.rech]+','
 	savStr+=[G.shift,(G.shift) ? cprint(createVector(G.excn,G.excl)) : cprint(createVector(G.errn,G.errl))]
 	saveCanvas(savStr+"].png")
 }
