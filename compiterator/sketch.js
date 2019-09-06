@@ -8,7 +8,7 @@ function setup() {
 	G.ror = createVector(0,0) //Render Origin
 	G.cro = createVector(1,0) //Colour Rotation
 	G.cor = createVector(0,0) //Colour Origin
-	G.mode = 10 // iteration mode
+	G.mode = 0 // iteration mode
 	G.col=1 // colour mode
 	G.mem=1 // colour memory
 	G.rech=1  // regen check
