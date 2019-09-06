@@ -8,7 +8,7 @@ function setup() {
 	G.ror = createVector(0,0) //Render Origin
 	G.cro = createVector(1,0) //Colour Rotation
 	G.cor = createVector(0,0) //Colour Origin
-	G.mode = 0 // iteration mode
+	G.mode = 10 // iteration mode
 	G.col=1 // colour mode
 	G.mem=1 // colour memory
 	G.rech=1  // regen check
@@ -51,7 +51,7 @@ function setup() {
 	G.rad = G.RADI*smallestAspect
 	G.x = width/2
 	G.y = height/2
-	G.MMODE = 6 // max iteration modes
+	G.MMODE = 11 // max iteration modes
 	G.MMFIX = 9 // max number of mouse fix modes
 	//Initialisation
 	G.pnt = createVector(0,0)
@@ -156,12 +156,10 @@ function itCD() {
 }
 
 function itEI(){
-	//angleMode(DEGREES)
-	z=cLI(G.pnt,G.attr,cUD(cadd(G.attr,cpow(G.pnt,cscal(G.t,2)))))
+	z= cLI(G.pnt,G.attr,cUD(cadd(G.attr,cpow(G.pnt,cscal(G.t,2)))))
 }
 
 function itEIB(){
-	//angleMode(DEGREES)
 	z = cLI(G.pit,G.attr,cUD(cadd(G.attr,cexp(cmul(createVector(0,G.pnt.mag()),cBE(G.t))))))
 }
 
@@ -183,7 +181,6 @@ function itPN(){
 	n=G.set.length
 	c=G.polyCs[G.seti]
 	d=G.dpolyCs[G.seti]
-	z=zPows(n)
 	zp=zPows(n)
 	pc=createVector(0,0)
 	for (i=0;i<n;i++){
@@ -194,8 +191,60 @@ function itPN(){
 		for (i=0;i<n-1;i++){
 			pd.add(cmul(d[i],zp[i]))
 		}
-		z=csub(G.pnt,cdiv(pc,pd))
+		z=csub(cmul(G.pnt,G.t),cdiv(pc,pd))
 	}
+}
+
+function itPFB(){
+	n=G.set.length
+	c=G.polyCs[G.seti]
+	zp=zPowsB(n)
+	z=createVector(0,0)
+	for (i=0;i<n;i++){
+		z.add(cmul(c[i],zp[i]))
+	}
+}
+
+function itPNB(){
+	n=G.set.length
+	c=G.polyCs[G.seti]
+	d=G.dpolyCs[G.seti]
+	zp=zPowsB(n)
+	pc=createVector(0,0)
+	for (i=0;i<n;i++){
+		pc.add(cmul(c[i],zp[i]))
+	}
+	if (n-1){
+		pd=createVector(0,0)
+		for (i=0;i<n-1;i++){
+			pd.add(cmul(d[i],zp[i]))
+		}
+		z=csub(cmul(G.pnt,G.t),cdiv(pc,pd))
+	}
+}
+
+function itPFBB(){
+	n=G.set.length
+	c=G.polyCs[G.seti]
+	zp=zPowsBB(n)
+	cx=c[0].x
+	cy=c[0].y
+	zx=zp[0].x
+	zy=zp[0].y
+	p=createVector(cx*zx-cy*zy,cx*zy+cy*zx)
+	for (i=1;i<n;i++){
+		cx=c[i].x
+		cy=c[i].y
+		zx=zp[i].x
+		zy=zp[i].y
+		p.add(createVector(cx*zx-cy*zy,cx*zy+cy*zx))
+	}
+	G.pnt=cmul(p,G.t)
+	x1 = G.attr.x
+	y1 = G.attr.y
+	x2 = G.pnt.x
+	y2 = G.pnt.y
+	z = createVector((x1+x2)/2,(y1+y2)/2)
 }
 
 function itUp() {
@@ -224,18 +273,38 @@ function iterate() {
 			itCD()
 		break
 		case 2:
-		//Polynomial Function
-			itPF()
-		break
-		case 3:
-			itPN()
-		break
-		case 4:
 			itEI()
 		break
-		case 5:
+		case 3:
 			itEIB()
 		break
+		case 4:
+			//Polynomial Function
+			itPF()
+		break
+		case 5:
+			//Polynomial Newton's Method
+			itPN()
+		break
+		case 6:
+		//Polynomial Function (broken z)
+			itPFB()
+		break
+		case 7:
+		//Polynomial Newton's Method (broken z)
+			itPNB()
+		break
+		case 8:
+		//Polynomial Function (broken z + broken poly)
+			itPFB()
+		break
+		case 9:
+		//Polynomial Newton's Method (broken z + broken poly)
+			itPNB()
+		break
+		case 10:
+		//Polynomial Function (broken broken z + broken broken poly + broken function)
+			itPFBB()
 		default:
 		//Midpoint
 			itMP()
@@ -244,13 +313,25 @@ function iterate() {
 }
 
 function updPolyCs(){
-	if (G.mode==2||G.mode==3){
+	if (G.mode>=4&&G.mode<=7){
 		G.polyCs=[attrPolyCs(G.attrs[0])]
 		for (let j=1;j<G.attrs.length;j++){
 			G.polyCs.push(attrPolyCs(G.attrs[j]))
 		}
 	}
-	if (G.mode==3){
+	else if (G.mode==8||G.mode==9){
+		G.polyCs=[attrPolyCsB(G.attrs[0])]
+		for (let j=1;j<G.attrs.length;j++){
+			G.polyCs.push(attrPolyCsB(G.attrs[j]))
+		}
+	}
+	if (G.mode==10){
+		G.polyCs=[attrPolyCsBB(G.attrs[0])]
+		for (j=1;j<G.attrs.length;j++){
+			G.polyCs.push(attrPolyCsBB(G.attrs[j]))
+		}
+	}
+	if (G.mode==5||G.mode==7||G.mode==9){
 		G.dpolyCs=[dPolyC(G.polyCs[0])]
 		for (let j=1;j<G.attrs.length;j++){
 			G.dpolyCs.push(dPolyC(G.polyCs[j]))
@@ -259,6 +340,37 @@ function updPolyCs(){
 }
 
 function attrPolyCs(set){
+	cp=[createVector(1,0)]
+	for (n=0;n<set.length;n++){
+		cp.push(cp[n])
+		r=cscal(set[n],-1)
+		for (j=1;j<n;j++){
+			cp[n-j]=cadd(cp[n-j-1],cmul(r,cp[n-j]))
+		}
+		cp[0]=cmul(r,cp[0])
+	}
+	return cp
+}
+
+function dPolyC(pc){
+	let dpc=[];
+	for (i=0;i<pc.length-1;i++){
+		c=pc[i+1]
+		dpc.push(cscal(c,i+1))
+	}
+	return dpc
+}
+
+function zPows(n){
+	z=G.pnt // cmul(G.t,G.pnt)
+	zp=[G.t]
+	for (i=1;i<n;i++){
+		zp.push(cmul(zp[i-1],z))
+	}
+	return zp
+}
+
+function attrPolyCsB(set){
 	c=[]
 	cd=createVector(1,0)
 	for (n=0;n<set.length;n++){
@@ -278,16 +390,7 @@ function attrPolyCs(set){
 	return c
 }
 
-function dPolyC(pc){
-	let dpc=[];
-	for (i=0;i<pc.length-1;i++){
-		c=pc[i+1]
-		dpc.push(cscal(c,i+1))
-	}
-	return dpc
-}
-
-function zPows(n){
+function zPowsB(n){
 	xt = G.t.x
 	yt = G.t.y
 	r = sqrt(xt*xt+yt*yt)
@@ -306,6 +409,40 @@ function zPows(n){
 		zp.push(createVector(xp*x-yp*y,xp*y+yp*x))
 	}
 	return zp
+}
+
+function zPowsBB(n){
+	x=G.pnt.x
+	y=G.pnt.y
+	zp=[createVector(1,0)]
+	if (n>0){
+		zp.push(createVector(x,y))
+	}
+	xp=x
+	yp=y
+	for (i=2;i<n;i++){
+		zp.push(createVector(xp*x-yp*y,xp*y+yp*x))
+	}
+	return zp
+}
+
+function attrPolyCsBB(set){
+	c=[createVector(G.t.x,G.t.y)]
+	for (n=0;n<set.length;n++){
+		c.push(createVector(0,0))
+		sr=set[n].x
+		si=set[n].y
+		for (i=n;i>0;i--){
+			cr=c[i].x
+			ci=c[i].y
+			cl=c[i-1].copy()
+			c[i]=cl.sub(createVector(sr*cr-si*cr,sr*ci+si*cr))
+		}
+		cr=c[0].x
+		ci=c[0].y
+		c[0]=createVector(-sr*cr-si*ci,-sr*ci-si*cr)
+	}
+	return c
 }
 
 function mout(x,y,a){
@@ -658,6 +795,7 @@ function keyPressed() {
 				if (G.addr>=G.attrs.length){
 					G.addr=G.attrs.length-1
 				}
+				updPolyCs()
 			}
 			break
 			default:

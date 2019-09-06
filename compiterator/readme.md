@@ -1,6 +1,8 @@
 [Visit Live Version](https://aefgp.github.io/compiterator/index.html)
 
-Compiterator Version 1.9
+[Visit Wiki](https://github.com/AEFGP/AEFGP.github.io/wiki/Compiterator:-The-Chaos-Game)
+
+Compiterator Version 1.10
 
 ## Controls
 
@@ -64,10 +66,16 @@ Pressing `Q` toggles the rendering so that no changes occur, useful for pausing 
 Pressing `E` will cycle the different algorithms for the chaos game, it will not clear the screen.   
 1. linear interpolation algorithm.
 2. constant distance algorithm.    
-3. Polynomial function iteration.
-4. Polynomial Newton's method iteration.
-5. linear interpolation algorithm with exponential sum output parameter
-6. linear interpolation algorithm with pseudo-exponential sum output parameter
+3. linear interpolation algorithm with exponential sum output parameter
+4. linear interpolation algorithm with broken exponential sum output parameter
+5. Polynomial function iteration.
+6. Polynomial Newton's method iteration. 
+7. 5 w/ broken z
+8. 6 w/ broken z
+9. 5 w/ broken z + broken poly
+10. 6 w/ broken z + broken poly
+11. 5 w/ broken broken z + broken broken poly + broken PF
+
  
 Pressing `~` will cycle the different mouse-selector modes.     
 The mouse (or `WASD` keys) will set/move the point that controls different parameters:   
@@ -75,11 +83,11 @@ The mouse (or `WASD` keys) will set/move the point that controls different param
 1. Location of the iterated point, can be used to demonstrate the attractor properties.
 1. Point at which the plot is drawn towards, also useful to demonstrate the attractors.
 1. Most recently created node, useful for making small adjustments to the shape.
-2. Probabilities, with the probability of iterated point resetting as x and layer swapping as y respectively.
-3. Location of the origin of the plot.
-4. Rotation & scaling of the plot.
-5. Location of the origin for colouring.
-6. Rotation & scaling of the colour map.
+1. Probabilities, with the probability of iterated point resetting as x and layer swapping as y respectively.
+1. Location of the origin of the plot.
+1. Rotation & scaling of the plot.
+1. Location of the origin for colouring.
+1. Rotation & scaling of the colour map.
 
 
 You can budge the point specified by the input settings that would otherwise be set by the mouse a small distance from its current position by pressing `WASD` in the way you would expect, `W` = up, `A` = left, `S` = down, `D` = right.    
@@ -108,12 +116,14 @@ This program completes 500 iterations a frame.
 What layers and nodes can be selected in relevance to the previously selected layers and nodes can be changed.  
 The image is coloured based on previous iterations to highlight the fractal elements of the image such as the self-similarities and symmetries.       
 
+Even though the motivation for this project was to generate the chaos game, it also generates other complex iterated function systems, and uses the geometric meanings from the chaos game. For example the polynomial mode generates a polynomial which has the nodes of the current layer as its zeroes. 
+
 There are four algorithms for the iteration with sensible definitions:
-1. The iterated point moves on a linear interpolation to the chosen node with a complex parameter.     
+- The iterated point moves on a linear interpolation to the chosen node with a complex parameter.     
 The parameter, based on the screen position, is mapped from the whole plane into the unit disk.
-1. The iterated point moves by a rotation of a constant complex vector towards the chosen node.
+- The iterated point moves by a rotation of a constant complex vector towards the chosen node.
 The parameter, based on the screen position, is mapped in the reals by an exponential and in the imaginary by a branched logarithm.
-1. The iterated point moves to the output of a polynomial function that has the current layer as zeroes and multiplied by a complex parameter.    
-1. The iterated point moves according to applications of Newton's method over the same polynomial function as above.
+- The iterated point moves to the output of a polynomial function that has the current layer as zeroes and multiplied by a complex parameter.    
+- The iterated point moves according to applications of Newton's method over the same polynomial function as above.
 
 Sometimes the polynomial can escape the canvas, simply refresh the canvas or enable the randomisation or max iterations (max iterations is enabled by default)
