@@ -34,6 +34,9 @@ function setup() {
 	G.ITCAP = 20000 //Number of iterations until regen
 	G.NORENS= 3 //Number of points that are not rendered after each regen
 
+	G.IRML = 4 //Max number of layers in the I randomiser
+	G.IRMN = 6 //Max number of nodes in any layer in the I randomiser
+	G.IRMIN = 1 //Minimum number of excess (>1) nodes across all layers in the I randomiser
 
 	G.RADI = 10 //Size of attractor nodes
 	G.DR = 0.25 //Size of iterated point stamps
@@ -87,16 +90,55 @@ function windowResized() {
 	G.y = height/2
 }
 
+function iran(){
+	enodes=G.IRMIN
+	layers=floor(random(G.IRML)+1)
+	let attrs=[]
+	for (let i=layers-1;i>=0;i--){
+		let _set=[]
+		let nodes=floor(random(G.IRMIN,G.IRMN)+1)
+		if (nodes>1&&enodes>0){
+			enodes-nodes+1
+			if (enodes<0){
+				enodes=0
+			}
+		}
+		if (i==0){
+			nodes+=enodes
+		}
+		for (let j=0;j<nodes;j++){
+			let node=p5.Vector.random2D()
+			node.setMag(random(G.RSPAN))
+			_set.push(node)
+		}
+		attrs.push(_set)
+	}
+	G.attrs=attrs
+	if (G.seti>=G.attrs.length){
+		G.seti=G.attrs.length-1
+		G.set=G.attrs[G.seti]
+	}
+	if (G.addr>=G.attrs.length){
+		G.addr=G.attrs.length-1
+	}
+	if (G.excn>=G.set.length+2){
+		G.excn=G.set.length+1
+	}
+	if (G.excl>=G.attrs.length+2){
+		G.excl=G.attrs.length+1
+	}
+}
+
 function oran(){
 	//Randomise options
 	G.t=p5.Vector.random2D()
 	G.t.setMag(random(G.RSPAN))
 	G.shift=round(random())
-	G.errl=round(random())
-	G.errn=round(random())
-	G.excn=floor(random(G.set.length))
-	G.excl=floor(random(G.attrs.length))
-	G.mode=floor(random(G.MMODE))
+	G.errl=round(random(1+(1-G.shift)*G.attrs.length))
+	G.errn=round(random(1+(1-G.shift)*G.set.length))
+	G.excn=floor(random(G.set.length+2))
+	G.excl=floor(random(G.attrs.length+2))
+	//G.mode=floor(random(G.MMODE))
 }
 
 function pran(){
@@ -215,8 +257,8 @@ function itMP(){
 }
 
 function itPF(){
-	n=G.set.length
 	c=G.polyCs[G.seti]
+	n=c.length
 	zp=zPows(n)
 	z=createVector(0,0)
 	for (i=0;i<n;i++){
@@ -225,9 +267,9 @@ function itPF(){
 }
 
 function itPN(){
-	n=G.set.length
 	c=G.polyCs[G.seti]
 	d=G.dpolyCs[G.seti]
+	n=c.length
 	zp=zPows(n)
 	pc=createVector(0,0)
 	for (i=0;i<n;i++){
@@ -243,8 +285,8 @@ function itPN(){
 }
 
 function itPFB(){
-	n=G.set.length
 	c=G.polyCs[G.seti]
+	n=c.length
 	zp=zPowsB(n)
 	z=createVector(0,0)
 	for (i=0;i<n;i++){
@@ -253,9 +295,9 @@ function itPFB(){
 }
 
 function itPNB(){
-	n=G.set.length
 	c=G.polyCs[G.seti]
 	d=G.dpolyCs[G.seti]
+	n=c.length
 	zp=zPowsB(n)
 	pc=createVector(0,0)
 	for (i=0;i<n;i++){
@@ -271,8 +313,8 @@ function itPNB(){
 }
 
 function itPFBB(){
-	n=G.set.length
 	c=G.polyCs[G.seti]
+	n=c.length
 	zp=zPowsBB(n)
 	cx=c[0].x
 	cy=c[0].y
@@ -459,7 +501,7 @@ function dPolyC(pc){
 function zPows(n){
 	z=G.pnt // cmul(G.t,G.pnt)
 	zp=[G.t]
-	for (i=1;i<n;i++){
+	for (let i=1;i<n;i++){
 		zp.push(cmul(zp[i-1],z))
 	}
 	return zp
@@ -939,6 +981,10 @@ function keyPressed() {
 		if (keyCode==72){
 			//h
 			shuffleNodes()
+		}
+		if (keyCode==73){
+			//i
+			iran()
 		}
 		if (keyCode==75){
 			//k
