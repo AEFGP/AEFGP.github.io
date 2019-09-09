@@ -47,6 +47,7 @@ function setup() {
 	G.SCALI = 360
 	G.RADI = 10 //Size of attractor nodes
 	G.DR = 0.25 //Size of iterated point stamps
+	G.RSPAN = 1.85 //Upper bound of magnitude of random vectors
 	G.scal = G.SCALI*smallestAspect
 	G.rad = G.RADI*smallestAspect
 	G.x = width/2
@@ -54,6 +55,7 @@ function setup() {
 	G.MMODE = 11 // max iteration modes
 	G.MMFIX = 9 // max number of mouse fix modes
 	//Initialisation
+	G.MCOL = 5 // max colour variations
 	G.pnt = createVector(0,0)
 	G.pit = createVector(0,0)
 	G.trk = createVector(0,0)
@@ -78,6 +80,46 @@ function windowResized() {
 	G.rad = G.RADI*smallestAspect
 	G.x = width/2
 	G.y = height/2
+}
+
+function oran(){
+	//Randomise options
+	G.t=p5.Vector.random2D()
+	G.t.setMag(random(G.RSPAN))
+	G.shift=round(random())
+	G.errl=round(random())
+	G.errn=round(random())
+	G.excn=floor(random(G.set.length))
+	G.excl=floor(random(G.attrs.length))
+	G.mode=floor(random(G.MMODE))
+}
+
+function pran(){
+	//Randomise points
+	for (let i=0;i<G.attrs.length;i++){
+		_set=G.attrs[i]
+		for (let j=0;j<_set.length;j++){
+			_set[j]=p5.Vector.random2D()
+			_set[j].setMag(random(G.RSPAN))
+		}
+	}
+}
+
+function cran(){
+	//Randomise colours
+	G.col=floor(random(G.MCOL-1)+1)
+	G.cor=p5.Vector.random2D()
+	G.cor.setMag(random(G.RSPAN))
+	G.cro=p5.Vector.random2D()
+	G.cro.setMag(random(G.RSPAN))
+}
+
+function vran(){
+	//Randomise render vectors
+	G.ror=p5.Vector.random2D()
+	G.ror.setMag(random(G.RSPAN))
+	G.rro=p5.Vector.random2D()
+	G.rro.setMag(random(G.RSPAN))
 }
 
 // Complex functions
@@ -443,6 +485,16 @@ function attrPolyCsBB(set){
 		c[0]=createVector(-sr*cr-si*ci,-sr*ci-si*cr)
 	}
 	return c
+}
+
+function shuffleNodes(){
+	for (let i=0;i<G.attrs.length;i++){
+		G.attrs[i]=shuffle(G.attrs[i])
+	}
+}
+
+function shuffleLayers(){
+	G.attrs = shuffle(G.attrs)
 }
 
 function mout(x,y,a){
@@ -819,10 +871,11 @@ function keyPressed() {
 		}
 		if (keyCode==66){
 			//b
-			G.col++
-			if(G.col>=5){
-			G.col=0
-			}
+			G.col=(G.col+1)%G.MCOL
+		}
+		if (keyCode==67){
+			//c
+			cran()
 		}
 		if (keyCode==69){
 			//e
@@ -830,22 +883,11 @@ function keyPressed() {
 		}
 		if (keyCode==72){
 			//h
-			for (let i=0;i<G.attrs.length;i++){
-				G.attrs[i]=shuffle(G.attrs[i])
-			}
+			shuffleNodes()
 		}
 		if (keyCode==75){
 			//k
-			G.attrs = shuffle(G.attrs)
-		}
-		if (keyCode==78){
-			//n
-			if(G.shift){
-				G.errn=!G.errn
-			}
-			else{
-				G.excn=(G.excn+1)%(G.set.length+2)
-			}
+			shuffleLayers()
 		}
 		if (keyCode==77){
 			//m
@@ -856,9 +898,29 @@ function keyPressed() {
 				G.excl=(G.excl+1)%(G.attrs.length+2)
 			}
 		}
+		if (keyCode==78){
+			//n
+			if(G.shift){
+				G.errn=!G.errn
+			}
+			else{
+				G.excn=(G.excn+1)%(G.set.length+2)
+			}
+		}
+		if (keyCode==79){
+			//o
+			oran()
+		}
+		if (keyCode==80){
+			//o
+			pran()
+		}
 		if (keyCode==85){
 			//u
 			G.rech=!G.rech
+		}
+		if (keyCode==86){
+			vran()
 		}
 		if (keyCode==188&&G.mem){
 			//<,

@@ -2,7 +2,7 @@
 
 [Visit Wiki](https://github.com/AEFGP/AEFGP.github.io/wiki/Compiterator:-The-Chaos-Game)
 
-Compiterator Version 1.10
+Compiterator Version 1.11
 
 ## Controls
 
@@ -23,6 +23,10 @@ Compiterator Version 1.10
 * `M`: Cycle layer exclusion
 * `H`: Jumble node order
 * `K`: Jumble layer order
+* `C`: Randomise colour settings
+* `V`: Randomise render vectors
+* `O`: Randomise iteration options
+* `P`: Randomise attractor nodes / points
 * `shift`: Toggle toggling of N and M to their broken functions in prior versions 
 * `~`: Cycle mouse-selector mode
 * `W`: Move mouse-selector point up
@@ -65,16 +69,16 @@ Pressing `Q` toggles the rendering so that no changes occur, useful for pausing 
 
 Pressing `E` will cycle the different algorithms for the chaos game, it will not clear the screen.   
 1. linear interpolation algorithm.
-2. constant distance algorithm.    
-3. linear interpolation algorithm with exponential sum output parameter
-4. linear interpolation algorithm with broken exponential sum output parameter
-5. Polynomial function iteration.
-6. Polynomial Newton's method iteration. 
-7. 5 w/ broken z
-8. 6 w/ broken z
-9. 5 w/ broken z + broken poly
-10. 6 w/ broken z + broken poly
-11. 5 w/ broken broken z + broken broken poly + broken PF
+1. constant distance algorithm.    
+1. linear interpolation algorithm with exponential sum output parameter
+1. linear interpolation algorithm with broken exponential sum output parameter
+1. Polynomial function iteration.
+1. Polynomial Newton's method iteration. 
+1. 5 w/ broken z
+1. 6 w/ broken z
+1. 5 w/ broken z + broken poly
+1. 6 w/ broken z + broken poly
+1. 5 w/ broken broken z + broken broken poly + broken PF
 
  
 Pressing `~` will cycle the different mouse-selector modes.     
