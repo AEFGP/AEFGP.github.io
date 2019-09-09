@@ -2,7 +2,7 @@
 
 [Visit Wiki](https://github.com/AEFGP/AEFGP.github.io/wiki/Compiterator:-The-Chaos-Game)
 
-Compiterator Version 1.11
+Compiterator Version 1.12
 
 ## Controls
 
@@ -15,6 +15,8 @@ Compiterator Version 1.11
 * `right arrow`: Next layer 
 * `left arrow`: Previous layer   
 --RENDER--   
+* `"`|`'`: Increase resolution multiplier
+* `:`|`;`: Decrease resolution multiplier
 * `Q`: Toggle render (freeze)
 * `R`: Clear render (and randomise point)
 * `U`: Toggle max iteration checking
@@ -42,10 +44,11 @@ Compiterator Version 1.11
 * `7`: Render rotation mouse-selector mode
 * `8`: Colour origin mouse-selector mode
 * `9`: Colour rotation mouse-selector mode
-* `<`: Decrease colour cycle depth
-* `>`: Increase colour cycle depth
 * `B`: Cycle colour mode
-* `enter`: Save Image (Right click the canvas and save manually if this doesn't work)
+* `<`|`,`: Decrease colour cycle depth
+* `>`|`.`: Increase colour cycle depth
+* `?`|`/`: Dump parameters into browser console
+* `enter`: Save Image
 
 ## Instructions
 In **edit mode** (default state):        
@@ -69,16 +72,18 @@ Pressing `Q` toggles the rendering so that no changes occur, useful for pausing 
 
 Pressing `E` will cycle the different algorithms for the chaos game, it will not clear the screen.   
 1. linear interpolation algorithm.
-1. constant distance algorithm.    
-1. linear interpolation algorithm with exponential sum output parameter
-1. linear interpolation algorithm with broken exponential sum output parameter
-1. Polynomial function iteration.
-1. Polynomial Newton's method iteration. 
-1. 5 w/ broken z
-1. 6 w/ broken z
-1. 5 w/ broken z + broken poly
-1. 6 w/ broken z + broken poly
-1. 5 w/ broken broken z + broken broken poly + broken PF
+2. constant distance algorithm.    
+3. linear interpolation algorithm with exponential sum output parameter
+4. linear interpolation algorithm with broken exponential sum output parameter
+5. Polynomial function iteration.
+6. Polynomial Newton's method iteration. 
+7. 5 w/ broken z
+8. 6 w/ broken z
+9. 5 w/ broken z + broken poly
+10. 6 w/ broken z + broken poly
+11. 5 w/ broken broken z + broken broken poly + broken PF
+12. old exponential & constant distance iteration
+13. old exponential iteration
 
  
 Pressing `~` will cycle the different mouse-selector modes.     
@@ -91,8 +96,7 @@ The mouse (or `WASD` keys) will set/move the point that controls different param
 1. Location of the origin of the plot.
 1. Rotation & scaling of the plot.
 1. Location of the origin for colouring.
-1. Rotation & scaling of the colour map.
-
+1. Rotation & scaling of the colour map.     
 
 You can budge the point specified by the input settings that would otherwise be set by the mouse a small distance from its current position by pressing `WASD` in the way you would expect, `W` = up, `A` = left, `S` = down, `D` = right.    
 This can be used to observe how small changes in the current state effect the outcome without having to locate the old point with the mouse.
@@ -104,10 +108,14 @@ Use H and K to jumble the node and layer order to explore all the permutations o
 If you wish to use the old broken functionality of the node and layer exclusion modes, press `SHIFT`, then press `N` or `M`, then `SHIFT` again.   
 The node exclusion or the layer exclusion respectively will work as they did before the fix. (`SHIFT` toggles the `N` and `M` buttons into toggles of the fix independently for either mode)   
 
-
 You can cycle through different modes of the colours shown by pressing `B`. This will clear the screen.   
 The depth to which the colour algorithm refers to can be increased or decreased by using `>` and `<`.    
 This will increase the time it takes the render to fill but it can allow for a clearer exploration of the self-similarities and symmetries in the fractal structures produced.
+
+The position of all the attractor nodes can be randomly set using `P`     
+The other settings pertaining to the shape of the fractal can be randomly set using `O`      
+Colour settings can be randomly set using `C`      
+The location, size and rotation of the render can randomly set using `V`        
 
 ## Background Information
 The chaos game involves choosing points in a probabilistic algorithm and iterating the movement by some other algorithm to the chosen point of a tracked point.   

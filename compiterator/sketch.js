@@ -13,10 +13,10 @@ function setup() {
 	G.mem=1 // colour memory
 	G.rech=1  // regen check
 	G.shift=0 // exclusion mode shift toggle
-	G.excn=0 // 
-	G.excl=0 // 
-	G.errn=0 //
-	G.errl=0 // 
+	G.excn=0 // node exclusion
+	G.excl=0 // layer exclusion
+	G.errn=0 // classic node exclusion
+	G.errl=0 // classic layer exclusion
 
 	G.attrs = [[ //Layers of Attractor Nodes initial state
 			createVector(0,4/sqrt(3)/3),
@@ -34,25 +34,29 @@ function setup() {
 	G.ITCAP = 20000 //Number of iterations until regen
 	G.NORENS= 3 //Number of points that are not rendered after each regen
 
+
+	G.RADI = 10 //Size of attractor nodes
+	G.DR = 0.25 //Size of iterated point stamps
+	G.gres = 1 //Graphics Resolution Multiplier
+
 	//Stuff you shouldn't change
 	G.CR = 1
 	createCanvas(windowWidth*G.CR,windowHeight*G.CR)
-	G.graph=createGraphics(width,height)
-	G.graph.noStroke()
+	G.graph=createGraphics(width*G.gres,height*G.gres)
 	G.graph.colorMode(HSB,360)
+	G.graph.background(0)
+	G.graph.noStroke()
 	colorMode(HSB,360)
 	background(0)
 	angleMode(RADIANS)
 	smallestAspect = min(width,height)/(1080*G.CR)
 	G.SCALI = 360
-	G.RADI = 10 //Size of attractor nodes
-	G.DR = 0.25 //Size of iterated point stamps
 	G.RSPAN = 1.85 //Upper bound of magnitude of random vectors
 	G.scal = G.SCALI*smallestAspect
 	G.rad = G.RADI*smallestAspect
 	G.x = width/2
 	G.y = height/2
-	G.MMODE = 11 // max iteration modes
+	G.MMODE = 13 // max iteration modes
 	G.MMFIX = 9 // max number of mouse fix modes
 	//Initialisation
 	G.MCOL = 5 // max colour variations
@@ -72,8 +76,9 @@ function setup() {
 function windowResized() {
 	//Event for when window is resized
 	resizeCanvas(windowWidth*G.CR,windowHeight*G.CR)
-	G.graph=createGraphics(width,height)
+	G.graph=createGraphics(width*G.gres,height*G.gres)
 	G.graph.colorMode(HSB,360)
+	G.graph.background(0)
 	G.graph.noStroke()
 	smallestAspect = min(width,height)/(1080*G.CR)
 	G.scal = G.SCALI*smallestAspect
@@ -289,6 +294,45 @@ function itPFBB(){
 	z = createVector((x1+x2)/2,(y1+y2)/2)
 }
 
+function itEI(){
+	x0 = G.t.x*2
+	y0 = G.t.y*2
+	x1 = G.attr.x
+	y1 = G.attr.y
+	x2 = G.pnt.x
+	y2 = G.pnt.y
+	r = sqrt(x2*x2+y2*y2)
+	t = atan2(y2,x2)
+	x = x1+pow(r,x0)*exp(-y0*t)*cos(t*x0+y0*log(r))
+	y = y1+pow(r,x0)*exp(-y0*t)*sin(t*x0+y0*log(r))
+	z=createVector(x,y)
+}
+
+function itEItoCD(){
+	x4 = G.t.x*2
+	y4 = G.t.y*2
+	x5 = G.attr.x
+	y5 = G.attr.y
+	x2 = G.pnt.x
+	y2 = G.pnt.y
+	r2 = sqrt(x2*x2+y2*y2)
+	t = atan2(y2,x2)
+	x6 = x5+pow(r2,x4)*exp(-y4*t)*cos(t*x4+y4*log(r2))
+	y6 = y5+pow(r2,x4)*exp(-y4*t)*sin(t*x4+y4*log(r2))
+	x0 = exp(x6)
+	y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
+	x0 = exp(x6)
+	y0 = log(abs(y6)+1)*(y6<0 ? -1 : 1)
+	x1 = G.attr.x-G.pnt.x
+	y1 = G.attr.y-G.pnt.y
+	x2 = G.pnt.x
+	y2 = G.pnt.y
+	r = sqrt(x1*x1+y1*y1)
+	x3 = x2+(x0*x1-y0*y1)/r
+	y3 = y2+(x0*y1+x1*y0)/r
+	z=createVector(x3,y3)
+}
+
 function itUp() {
 	G.pnt.x=z.x
 	G.pnt.y=z.y
@@ -347,6 +391,15 @@ function iterate() {
 		case 10:
 		//Polynomial Function (broken broken z + broken broken poly + broken function)
 			itPFBB()
+		break
+		case 11:
+		//Broken old exponential to constant distance
+			itEItoCD()
+		break
+		case 12:
+		//Old exponential
+			itEI()
+		break
 		default:
 		//Midpoint
 			itMP()
@@ -737,7 +790,7 @@ function draw() {
 				}
 				else{
 					ren = cadd(cmul(G.pnt,G.rro),G.ror)
-					G.graph.ellipse(ren.x*G.scal+G.x,-ren.y*G.scal+G.y,G.DR,G.DR)
+					G.graph.ellipse((ren.x*G.scal+G.x)*G.gres,(-ren.y*G.scal+G.y)*G.gres,G.DR,G.DR)
 				}
 			}
 		}
@@ -759,6 +812,7 @@ function keyPressed() {
 		//space
 		G.edit = !G.edit
 		G.graph.clear()
+		G.graph.background(0)
 		regen()
 	}
 	let l=mget()
@@ -859,6 +913,7 @@ function keyPressed() {
 			//r
 			regen()
 			G.graph.clear()
+			G.graph.background(0)
 			
 		}
 		if (keyCode==13){
@@ -922,6 +977,13 @@ function keyPressed() {
 		if (keyCode==86){
 			vran()
 		}
+		if (keyCode==186){
+			//:;
+			if(G.gres>1){
+				G.gres--
+				windowResized()
+			}
+		}
 		if (keyCode==188&&G.mem){
 			//<,
 			G.mem--
@@ -929,6 +991,15 @@ function keyPressed() {
 		if (keyCode==190){
 			//>.
 			G.mem++
+		}
+		if (keyCode==191){
+			//?/
+			cDump()
+		}
+		if (keyCode==222){
+			//"'
+			G.gres++
+			windowResized()
 		}
 	}
 	updPolyCs()
@@ -946,27 +1017,50 @@ function cprint(u){
 	return '{'+u.x+','+u.y+'}'
 }
 
+function ctprint(u){
+	return '{'+floor(100*u.x)/100+','+floor(100*u.y)/100+'}'
+}
+
 function customSave(){
 	let savStr="CIT ["
-	savStr+=[G.mode,cprint(G.t),cprint(G.rro),G.col,G.mem,G.rech]+','
+	savStr+=[G.mode,'{'+floor(10000*G.t.x)/10000+','+floor(10000*G.t.y)/10000+'}']+','
 	savStr+=[G.shift,(G.shift) ? cprint(createVector(G.excn,G.excl)) : cprint(createVector(G.errn,G.errl))]
-	saveCanvas(savStr+"].png")
+	savStr+=','+[G.col,G.mem,ctprint(G.cro),ctprint(G.cor),ctprint(G.rro),ctprint(G.ror),ctprint(G.pro)]
+	savStr+=','+[cprint(createVector(width,height)),G.gres,G.DR]
+	save(G.graph,savStr+"].png")
+}
+
+function cDump(){
+	console.log("	Render Settings:")
+	console.log("Resolution",cprint(createVector(width,height)))
+	console.log("Resolution Multiplier",G.gres)
+	console.log("Point Radius",G.DR)
+	console.log("Repetitions",G.REPS)
+	console.log("Iteration Cap",G.ITCAP)
+	console.log("Ignored Iterations",G.NORENS)
+	console.log("Regen Check",G.rech)
+	console.log("Colour Memory",G.mem)
+	console.log("Colour Mode",G.col)
+	console.log("Colour Rotation",cprint(G.cro))
+	console.log("Colour Offset",cprint(G.cor))
+	console.log("Probabilities",cprint(G.pro))
+	console.log("Render Rotation",cprint(G.rro))
+	console.log("Render Offset",cprint(G.ror))
+	console.log("	Shape Settings:")
+	console.log("Iteration Mode",G.mode)
+	console.log("Complex Parameter",cprint(G.t))
+	console.log("Classic Exclusion",G.shift)
+	console.log("Node/Layer Exclusion",(G.shift) ? cprint(createVector(G.excn,G.excl)) : cprint(createVector(G.errn,G.errl)))
+	console.log("Layers",G.attrs.length)
+	for (let i=0;i<G.attrs.length;i++){
+		console.log("	Layer",i,"Nodes",G.attrs[i].length)
+		for (let j=0;j<G.attrs[i].length;j++){
+			console.log("		",j,cprint(G.attrs[i][j]))
+		}
+	}
 }
 
 //Hall of old functions
-
-//function itEI(){
-	//x0 = G.t.x*2
-	//y0 = G.t.y*2
-	//x1 = G.attr.x
-	//y1 = G.attr.y
-	//x2 = G.pnt.x
-	//y2 = G.pnt.y
-	//r = sqrt(x2*x2+y2*y2)
-	//t = atan2(y2,x2)
-	//x = x1+pow(r,x0)*exp(-y0*t)*cos(t*x0+y0*log(r))
-	//y = y1+pow(r,x0)*exp(-y0*t)*sin(t*x0+y0*log(r))
-//}
 
 //function itPD(){
 //	n=G.set.length
