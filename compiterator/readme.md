@@ -2,7 +2,10 @@
 
 [Visit Wiki](https://github.com/AEFGP/AEFGP.github.io/wiki/Compiterator:-The-Chaos-Game)
 
-Compiterator Version 1.12
+Compiterator Version 1.12.1
+Open index.HTML in Chromium based browsers, this script seems to have really bad performance on other browsers.
+
+The name 'Compiterator' (for "Complex Iterator") is based on the fact the program uses iterations of complex functions. It is meant to be a geometric live interactive way to generate fractals, it is in some sense a mathematical toy.
 
 ## Controls
 
@@ -29,6 +32,7 @@ Compiterator Version 1.12
 * `V`: Randomise render vectors
 * `O`: Randomise iteration options
 * `P`: Randomise attractor nodes / points
+* `I`: Randomise number of layers and numbers of points
 * `shift`: Toggle toggling of N and M to their broken functions in prior versions 
 * `~`: Cycle mouse-selector mode
 * `W`: Move mouse-selector point up
@@ -116,6 +120,8 @@ The position of all the attractor nodes can be randomly set using `P`
 The other settings pertaining to the shape of the fractal can be randomly set using `O`      
 Colour settings can be randomly set using `C`      
 The location, size and rotation of the render can randomly set using `V`        
+To randomise the actual number of layers and points for each layer use `I`
+The iteration mode is not randomised by any of these settings.
 
 ## Background Information
 The chaos game involves choosing points in a probabilistic algorithm and iterating the movement by some other algorithm to the chosen point of a tracked point.   
