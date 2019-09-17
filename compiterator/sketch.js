@@ -8,6 +8,7 @@ function setup() {
 	G.ror = createVector(0,0) //Render Origin
 	G.cro = createVector(1,0) //Colour Rotation
 	G.cor = createVector(0,0) //Colour Origin
+
 	G.mode = 0 // iteration mode
 	G.col=1 // colour mode
 	G.mem=1 // colour memory
@@ -42,6 +43,11 @@ function setup() {
 	G.DR = 0.25 //Size of iterated point stamps
 	G.gres = 1 //Graphics Resolution Multiplier
 
+	G.AUTOM = 3 //Number of recharges for automatic randomisation
+	G.auto=1 // automatic randomisation
+	G.autor=1 // automatically clear render
+	G.edit=0 // edit/render toggle
+
 	//Stuff you shouldn't change
 	G.CR = 1
 	createCanvas(windowWidth*G.CR,windowHeight*G.CR)
@@ -59,7 +65,7 @@ function setup() {
 	G.rad = G.RADI*smallestAspect
 	G.x = width/2
 	G.y = height/2
-	G.MMODE = 13 // max iteration modes
+	G.MMODE = 14 // max iteration modes
 	G.MMFIX = 9 // max number of mouse fix modes
 	//Initialisation
 	G.MCOL = 5 // max colour variations
@@ -70,10 +76,10 @@ function setup() {
 	G.set=G.attrs[0]
 	G.seti=0 // selected layer index
 	G.addr=0 // selected node in layer
-	G.edit=1 // edit/render toggle
 	G.ren=1 // render loop toggle
 	G.itsr=0  // iterations since regen
 	G.noren=0  // iterations to not render
+	G.autoi=0 // iterations for randomisation
 }
 
 function windowResized() {
@@ -266,6 +272,16 @@ function itPF(){
 	}
 }
 
+function itPD(){
+	d=G.dpolyCs[G.seti]
+	n=d.length
+	zp=zPows(n)
+	z=createVector(0,0)
+	for (i=0;i<n;i++){
+		z.add(cmul(d[i],zp[i]))
+	}
+}
+
 function itPN(){
 	c=G.polyCs[G.seti]
 	d=G.dpolyCs[G.seti]
@@ -385,6 +401,20 @@ function iterate() {
 		if(G.itsr>G.ITCAP){
 			G.itsr=-1
 			regen()
+			if(G.auto){
+				G.autoi++
+				if(G.autoi>=G.AUTOM){
+					G.autoi=0
+					oran()
+					pran()
+					cran()
+					vran()
+					if(G.autor){
+						G.graph.clear()
+						G.graph.background(0)
+					}
+				}
+			}
 		}
 		G.itsr++
 	}
@@ -411,34 +441,38 @@ function iterate() {
 			itPF()
 		break
 		case 5:
+			//Polynomial Derivative
+			itPD()
+		break
+		case 6:
 			//Polynomial Newton's Method
 			itPN()
 		break
-		case 6:
+		case 7:
 		//Polynomial Function (broken z)
 			itPFB()
 		break
-		case 7:
+		case 8:
 		//Polynomial Newton's Method (broken z)
 			itPNB()
 		break
-		case 8:
+		case 9:
 		//Polynomial Function (broken z + broken poly)
 			itPFB()
 		break
-		case 9:
+		case 10:
 		//Polynomial Newton's Method (broken z + broken poly)
 			itPNB()
 		break
-		case 10:
+		case 11:
 		//Polynomial Function (broken broken z + broken broken poly + broken function)
 			itPFBB()
 		break
-		case 11:
+		case 12:
 		//Broken old exponential to constant distance
 			itEItoCD()
 		break
-		case 12:
+		case 13:
 		//Old exponential
 			itEI()
 		break
@@ -450,25 +484,25 @@ function iterate() {
 }
 
 function updPolyCs(){
-	if (G.mode>=4&&G.mode<=7){
+	if (G.mode>=4&&G.mode<=8){
 		G.polyCs=[attrPolyCs(G.attrs[0])]
 		for (let j=1;j<G.attrs.length;j++){
 			G.polyCs.push(attrPolyCs(G.attrs[j]))
 		}
 	}
-	else if (G.mode==8||G.mode==9){
+	else if (G.mode==9||G.mode==10){
 		G.polyCs=[attrPolyCsB(G.attrs[0])]
 		for (let j=1;j<G.attrs.length;j++){
 			G.polyCs.push(attrPolyCsB(G.attrs[j]))
 		}
 	}
-	if (G.mode==10){
+	if (G.mode==11){
 		G.polyCs=[attrPolyCsBB(G.attrs[0])]
 		for (j=1;j<G.attrs.length;j++){
 			G.polyCs.push(attrPolyCsBB(G.attrs[j]))
 		}
 	}
-	if (G.mode==5||G.mode==7||G.mode==9){
+	if (G.mode==5||G.mode==6||G.mode==8||G.mode==10){
 		G.dpolyCs=[dPolyC(G.polyCs[0])]
 		for (let j=1;j<G.attrs.length;j++){
 			G.dpolyCs.push(dPolyC(G.polyCs[j]))
@@ -849,6 +883,9 @@ function regen() {
 
 function keyPressed() {
 	//Event for handling keypresses
+	if (G.auto){
+		G.auto=0
+	}
 	print(keyCode)
 	if (keyCode==32){
 		//space
