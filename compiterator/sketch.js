@@ -886,19 +886,6 @@ function regen() {
 
 function keyPressed() {
 	//Event for handling keypresses
-	if (G.auto){
-		G.auto=0
-	}
-	if (G.INRAN){
-		oran()
-		pran()
-		cran()
-		vran()
-	}
-	if (G.INREF){
-		G.graph.clear()
-		G.graph.background(0)
-	}
 	print(keyCode)
 	if (keyCode==32){
 		//space
@@ -997,24 +984,19 @@ function keyPressed() {
 			}
 			break
 			default:
-			
 		}
 	}
 	else{
-		if (keyCode==82){
-			//r
-			regen()
-			G.graph.clear()
-			G.graph.background(0)
-			
-		}
 		if (keyCode==13){
 			//enter
 			customSave()
 		}
-		if (keyCode==81){
-			//q
-			G.ren=!G.ren
+		if (keyCode==40){
+			//down
+			if (G.INREF){
+				cDump()
+				customSave()
+			}
 		}
 		if (keyCode==66){
 			//b
@@ -1066,6 +1048,17 @@ function keyPressed() {
 			//o
 			pran()
 		}
+		if (keyCode==81){
+			//q
+			G.ren=!G.ren
+		}
+		if (keyCode==82){
+			//r
+			regen()
+			G.graph.clear()
+			G.graph.background(0)
+			
+		}
 		if (keyCode==85){
 			//u
 			G.rech=!G.rech
@@ -1096,9 +1089,22 @@ function keyPressed() {
 			//"'
 			G.gres++
 			windowResized()
-		}
+		}		
 	}
 	updPolyCs()
+	if (G.auto){
+		G.auto=0
+	}
+	if (G.INRAN){
+		oran()
+		pran()
+		cran()
+		vran()
+	}
+	if (G.INREF){
+		G.graph.clear()
+		G.graph.background(0)
+	}
 }
 
 function mouseClicked(){
