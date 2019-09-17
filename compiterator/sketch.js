@@ -44,9 +44,12 @@ function setup() {
 	G.gres = 1 //Graphics Resolution Multiplier
 
 	G.AUTOM = 3 //Number of recharges for automatic randomisation
-	G.auto=1 // automatic randomisation
+	G.auto=0 // automatic randomisation
 	G.autor=1 // automatically clear render
 	G.edit=0 // edit/render toggle
+
+	G.INRAN=1 // radomise on input
+	G.INREF=1 // clear render on input
 
 	//Stuff you shouldn't change
 	G.CR = 1
@@ -885,6 +888,16 @@ function keyPressed() {
 	//Event for handling keypresses
 	if (G.auto){
 		G.auto=0
+	}
+	if (G.INRAN){
+		oran()
+		pran()
+		cran()
+		vran()
+	}
+	if (G.INREF){
+		G.graph.clear()
+		G.graph.background(0)
 	}
 	print(keyCode)
 	if (keyCode==32){
