@@ -889,6 +889,8 @@ function keyPressed() {
 	print(keyCode)
 	if (keyCode==32){
 		//space
+		G.INRAN = 0
+		G.INREF = 0
 		G.edit = !G.edit
 		G.graph.clear()
 		G.graph.background(0)
