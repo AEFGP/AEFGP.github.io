@@ -21,15 +21,26 @@ setTimeout(function() {
     zNode.setAttribute ('id', 'picker');
     zNode.setAttribute ('class', "jscolor");
     zNode.setAttribute('value',"ffffff")
-    zNode.setAttribute ('style',"position: relative; text-align: center; width:50%; top:-45%; height:35%; border:1px solid black");
+    zNode.setAttribute ('style',"position: relative; text-align: center; width:50%; top:-29.5%; height:30%; border:1px solid black");
     var x = document.getElementsByClassName("align-center-container");
     var i;
     for (i = 0; i < x.length; i++) {
         x[i].appendChild(zNode);
         break;
     }
+    zNode = document.createElement ('span');
+    zNode.setAttribute ('id', 'cstore');
+    zNode.setAttribute ('role', 'button');
+    zNode.setAttribute ('class', "dcg-btn-green");
+    zNode.innerHTML = "<div style = \"font-size: 85%; position: relative; left:-40%; top:-30%\">Save</div>";
+    zNode.setAttribute ('style',"position: relative; width:15%; left:55%; top:-58.5%; height:22.5%");
+    x = document.getElementsByClassName("align-center-container");
+    for (i = 0; i < x.length; i++) {
+        x[i].appendChild(zNode);
+        break;
+    }
     var gp = document.getElementById('picker')
-    gp.addEventListener("click", makeColour, false);
+    document.getElementById('cstore').addEventListener("click", makeColour, false);
     function makeColour(zEvent){
         if (gp.style.backgroundColor) {
             var col = rgb2hex(gp.style.backgroundColor)
