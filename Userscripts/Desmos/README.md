@@ -1,3 +1,5 @@
+## ColourPicker.js
+
 How to use:
 - Use chrome or firefox
 - Install Tampermonkey
