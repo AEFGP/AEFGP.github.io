@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Desmos Colour Picker Test
+// @name         Desmos Colour Picker
 // @namespace    http://tampermonkey.net/
 // @match        *://www.desmos.com/calculator*
 // @require      https://raw.githubusercontent.com/EastDesire/jscolor/master/jscolor.js
@@ -7,6 +7,10 @@
 
 setTimeout(function() {
     'use strict';
+
+    unsafeWindow.Calc.colors.SILVER = "#7f7f7f";
+    unsafeWindow.Calc.colors.CLEAR = "rgba(0,0,0,0)";
+    unsafeWindow.Calc.colors.COPY = "linear-gradient(rgba(0,0,0,0),currentcolor)";
 
     function rgb2hex(rgb) {
         if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
@@ -19,7 +23,7 @@ setTimeout(function() {
     }
     var zNode = document.createElement ('input');
     zNode.setAttribute ('id', 'picker');
-    zNode.setAttribute ('class', "jscolor");
+    zNode.setAttribute ('class', "jscolor {mode:\"HVS\"}");
     zNode.setAttribute('value',"ffffff")
     zNode.setAttribute ('style',"position: relative; text-align: center; width:50%; top:-29.5%; height:30%; border:1px solid black");
     var x = document.getElementsByClassName("align-center-container");
