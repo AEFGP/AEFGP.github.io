@@ -30,7 +30,7 @@ If having trouble getting it to load correctly, try changing the `0` at the bott
 setTimeout(function() {
     'use strict';
 
-    unsafeWindow.Calc.colors.SILVER = "#7f7f7f";
+    unsafeWindow.Calc.colors.SILVER = "rgba(127,127,127,0.5)";
     unsafeWindow.Calc.colors.CLEAR = "rgba(0,0,0,0)";
     unsafeWindow.Calc.colors.COPY = "linear-gradient(rgba(0,0,0,0),currentcolor)";
 
