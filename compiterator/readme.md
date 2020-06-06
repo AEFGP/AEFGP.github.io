@@ -2,10 +2,13 @@
 
 [Visit Wiki](https://github.com/AEFGP/AEFGP.github.io/wiki/Compiterator:-The-Chaos-Game)
 
-Compiterator Version 1.12.1
+Compiterator Version 1.13.0
 Open index.HTML in Chromium based browsers, this script seems to have really bad performance on other browsers.
 
 The name 'Compiterator' (for "Complex Iterator") is based on the fact the program uses iterations of complex functions. It is meant to be a geometric live interactive way to generate fractals, it is in some sense a mathematical toy.
+
+Press `space` twice as soon as you open it if you want to disable the automatic randomisation.
+The automatic randomisation is a half-measure so that devices that can't do keyboard or mouse input can still get some use out of the script. In the future there will hopefully be proper UI.
 
 ## Controls
 
@@ -55,7 +58,7 @@ The name 'Compiterator' (for "Complex Iterator") is based on the fact the progra
 * `enter`: Save Image
 
 ## Instructions
-In **edit mode** (default state):        
+In **edit mode**:        
 
    Place nodes in different layers to inform the kind of image that will be generated in render mode.   
    Use the up and down arrow keys to increase or decrease the total number of layers.   
@@ -136,12 +139,18 @@ The image is coloured based on previous iterations to highlight the fractal elem
 
 Even though the motivation for this project was to generate the chaos game, it also generates other complex iterated function systems, and uses the geometric meanings from the chaos game. For example the polynomial mode generates a polynomial which has the nodes of the current layer as its zeroes. 
 
-There are four algorithms for the iteration with sensible definitions:
+There are algorithms for the iteration with sensible definitions:
 - The iterated point moves on a linear interpolation to the chosen node with a complex parameter.     
 The parameter, based on the screen position, is mapped from the whole plane into the unit disk.
 - The iterated point moves by a rotation of a constant complex vector towards the chosen node.
 The parameter, based on the screen position, is mapped in the reals by an exponential and in the imaginary by a branched logarithm.
 - The iterated point moves to the output of a polynomial function that has the current layer as zeroes and multiplied by a complex parameter.    
 - The iterated point moves according to applications of Newton's method over the same polynomial function as above.
+- The iterated point moves to the incenter of a triangle composed of two adjacent nodes and a point linearly interpolated from the midpoint of the other nodes to the previous position with a complex parameter.
+The parameter is based on plain screen position but is shifted slightly.
+- The iterated point moves to a point parameterised within a triangle composed of two nodes and the previous position.
+The parameter, based on screen position, is mapped to remain within the unit square.
 
 Sometimes the polynomial can escape the canvas, simply refresh the canvas or enable the randomisation or max iterations (max iterations is enabled by default)
+
+There are other modes in the compiterator which are broken implementations of sensible modes which are kept in because they have interesting visuals.
