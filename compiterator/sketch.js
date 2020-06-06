@@ -1,5 +1,5 @@
 let G = {} //cross-canvas global container
-
+ 
 function setup() {
 	//Stuff you can change
 	G.t = createVector(1,0) //Iteration complex parameter's initial value
@@ -68,10 +68,10 @@ function setup() {
 	G.rad = G.RADI*smallestAspect
 	G.x = width/2
 	G.y = height/2
-	G.MMODE = 14 // max iteration modes
+	G.MMODE = 16 // max iteration modes
 	G.MMFIX = 9 // max number of mouse fix modes
 	//Initialisation
-	G.MCOL = 5 // max colour variations
+	G.MCOL = 6 // max colour variations
 	G.pnt = createVector(0,0)
 	G.pit = createVector(0,0)
 	G.trk = createVector(0,0)
@@ -231,9 +231,15 @@ function cBE(u){
 	//special exp-linear branch
 	return createVector(exp(2*abs(u.x)-1)*2*u.x,4*u.y)
 }
+function cUS(u){
+	//map to unit (filled) square
+	rx = abs(u.x)
+	ry = abs(u.y)
+	return createVector(u.x*(1-1/(rx+1))/rx, u.y*(1-1/(ry+1))/ry)
+}
 
 function cLI(u,v,t){
-	return cadd(cmul(cadd(createVector(1,0),cscal(t,-1)),v),cmul(t,u))
+	return cadd(cmul(csub(createVector(1,0),t),v),cmul(t,u))
 }
 function cCD(u,v,t){
 	w = csub(v,u)
@@ -244,6 +250,19 @@ function cCD(u,v,t){
 	return u
 }
 
+function cIC(u,v,t,w){
+	let m = cscal(cadd(v,w),1/2)
+	let a = cadd(cmul(csub(createVector(1,0),t),m),cmul(t,u))
+	let da = csub(v,w).mag()
+	let db = csub(w,a).mag()
+	let dc = csub(a,v).mag()
+	return cscal(cadd(cscal(a,da),cadd(cscal(v,db),cscal(w,dc))),1/(da+db+dc))
+}
+function cIT(u,v,t,w){
+	let m = cscal(cadd(v,w),1/2)
+	return cadd(cadd(m,cscal(csub(w,v),t.y/2)),cscal(csub(u,m),(1-t.x)/2*(1-abs(t.y))))
+}
+
 //Iteration Modes
 function itLI() {
 	z = cLI(G.pnt,G.attr,cUD(G.t))
@@ -251,6 +270,14 @@ function itLI() {
 
 function itCD() {
 	z = cCD(G.pnt,G.attr,cBL(G.t))
+}
+
+function itIC(){
+	z= cIC(G.pnt,G.attr,csub(G.t,createVector(0.5,0)),G.altr)
+}
+
+function itIT(){
+	z= cIT(G.pnt,G.attr,cUS(G.t),G.altr)
 }
 
 function itEI(){
@@ -478,6 +505,14 @@ function iterate() {
 		case 13:
 		//Old exponential
 			itEI()
+		break
+		case 14:
+		//Incenter
+			itIC()
+		break
+		case 15:
+		//Inner Triangle
+			itIT()
 		break
 		default:
 		//Midpoint
@@ -789,11 +824,11 @@ function draw() {
 							_set.push(G.attrs[k])
 						}
 					}
-					G.seti = floor(random(0,_set.length))
+					G.seti = floor(random(_set.length))
 					G.set = _set[G.seti]
 				}
 				else{
-					G.seti = floor(random(0,G.attrs.length))
+					G.seti = floor(random(G.attrs.length))
 					G.set = G.attrs[G.seti]
 				}
 			}
@@ -812,10 +847,14 @@ function draw() {
 					_set.push(G.set[k])
 					}
 				}
-				G.attr = random(_set)
+				let _seti = floor(random(_set.length))
+				G.attr = _set[_seti]
+				G.altr = _set[(_seti+1)%(_set.length)]
 			}
 			else{
-				G.attr = random(G.set)
+				let _seti = floor(random(G.set.length))
+				G.attr = G.set[_seti]
+				G.altr = G.set[(_seti+1)%(G.set.length)]
 			}
 			iterate()
 		    }
@@ -858,6 +897,14 @@ function draw() {
 					}
 					if (h>360){
 						h-=360
+					}
+					G.graph.fill(h,360,360)
+					break
+				case 5:
+					let edge = cdiv(G.altr.copy().sub(G.attr),G.cro)
+					h = degrees(cph.heading()-edge.heading())
+					if (h<0){
+						h+=360
 					}
 					G.graph.fill(h,360,360)
 					break
