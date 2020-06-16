@@ -22,17 +22,11 @@ How to use:
 When you save a desmos graph using custom colours the colours on the expressions will save!
 (but they will need to be added to the colours list if you want to use them for new expressions after reloading)
 
-The script also adds some special colours when loaded, if you don't want these, remove the lines from the script.
-
 If having trouble getting it to load correctly, try changing the `0` at the bottom of the script to something else like `300`
 */
 
 setTimeout(function() {
     'use strict';
-
-    unsafeWindow.Calc.colors.SILVER = "rgba(127,127,127,0.5)";
-    unsafeWindow.Calc.colors.CLEAR = "rgba(0,0,0,0)";
-    unsafeWindow.Calc.colors.COPY = "linear-gradient(rgba(0,0,0,0),currentcolor)";
 
     function rgb2hex(rgb) {
         if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
