@@ -43,6 +43,14 @@ setTimeout(function() {
         }
         return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
     }
+
+    function rgbaify(rgb,a) {
+        if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
+
+        rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        return "rgba("+rgb[1]+','+rgb[2]+','+rgb[3]+','+Number(a)/100+')';
+    }
+
     var zNode = document.createElement ('input');
     zNode.setAttribute ('id', 'picker');
     zNode.setAttribute ('class', "jscolor {mode:\"HVS\"}");
@@ -54,28 +62,50 @@ setTimeout(function() {
         x[i].appendChild(zNode);
         break;
     }
+
+    var gp = document.getElementById('picker')
+    var tr = "100";
+
     zNode = document.createElement ('span');
     zNode.setAttribute ('id', 'cstore');
     zNode.setAttribute ('role', 'button');
     zNode.setAttribute ('class', "dcg-btn-green");
     zNode.innerHTML = "<div style = \"font-size: 85%; position: relative; left:-40%; top:-30%\">Save</div>";
-    zNode.setAttribute ('style',"position: relative; width:15%; left:55%; top:-58.5%; height:22.5%");
+    zNode.setAttribute ('style',"position: relative; width:11.25%; left:2.5%; top:-22.5%; height:22.5%");
     x = document.getElementsByClassName("align-center-container");
     for (i = 0; i < x.length; i++) {
         x[i].appendChild(zNode);
         break;
     }
-    var gp = document.getElementById('picker')
+
+    zNode = document.createElement('input');
+    zNode.setAttribute ('id', 'ctrans');
+    zNode.type = 'range';
+    zNode.min = 0;
+    zNode.max = 100;
+    zNode.value = 100;
+    zNode.step = 1;
+    zNode.setAttribute ('style',"position: relative; width:15%; left:55%; top:-58.5%; height:22.5%");
+    zNode.oninput = function () {
+        tr = this.value;
+    }
+    x = document.getElementsByClassName("align-center-container");
+    for (i = 0; i < x.length; i++) {
+        x[i].appendChild(zNode);
+        break;
+    }
+
     document.getElementById('cstore').addEventListener("click", makeColour, false);
     function makeColour(zEvent){
         if (gp.style.backgroundColor) {
-            var col = rgb2hex(gp.style.backgroundColor)
+            var col = tr+rgb2hex(gp.style.backgroundColor);
+            var acol = rgbaify(gp.style.backgroundColor,tr);
             for (var c in unsafeWindow.Calc.colors) {
-                if (unsafeWindow.Calc.colors[c]==col) {
+                if (unsafeWindow.Calc.colors[c] == acol) {
                     return;
                 }
             }
-            unsafeWindow.Calc.colors[col] = col;
+            unsafeWindow.Calc.colors[col] = acol;
         }
     }
 }, 0);
