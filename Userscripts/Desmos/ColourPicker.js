@@ -3,6 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @match        *://www.desmos.com/calculator*
 // @require      https://raw.githubusercontent.com/EastDesire/jscolor/master/jscolor.js
+// @require      https://code.jquery.com/jquery-3.5.1.slim.min.js
 // ==/UserScript==
 
 /*
@@ -16,7 +17,8 @@ How to use:
 - Click the box at the top to open the picker
 - Move around and click to select colours
 - Type/backspace and enter to change the colour directly
-- Click the save box to the right to save the colour
+- Move the slider on the right of the save button to change the transparency.
+- Click the save button to the right of the box to save the colour
 - Saved colours appear when you press the cog icon at the top of expressions list and click the coloured circle for a given expression
 
 When you save a desmos graph using custom colours the colours on the expressions will save!
@@ -45,17 +47,18 @@ setTimeout(function() {
         return "rgba("+rgb[1]+','+rgb[2]+','+rgb[3]+','+Number(a)/100+')';
     }
 
+    var target = document.getElementsByClassName("dcg-header-desktop")[0];
+    var hold = document.createElement ('span');
+    target.insertBefore(hold, target.childNodes[2])
+
     var zNode = document.createElement ('input');
     zNode.setAttribute ('id', 'picker');
-    zNode.setAttribute ('class', "jscolor {mode:\"HVS\"}");
-    zNode.setAttribute('value',"ffffff")
-    zNode.setAttribute ('style',"position: relative; text-align: center; width:50%; top:-29.5%; height:30%; border:1px solid black");
-    var x = document.getElementsByClassName("align-center-container");
-    var i;
-    for (i = 0; i < x.length; i++) {
-        x[i].appendChild(zNode);
-        break;
-    }
+    zNode.setAttribute('value',"ffffff");
+    zNode.jscolor = new jscolor(zNode);
+    console.log(zNode.jscolor);
+    zNode.style.width = '25%';
+    zNode.style.height = '45%';
+    hold.appendChild(zNode);
 
     var gp = document.getElementById('picker')
     var tr = "100";
@@ -64,13 +67,9 @@ setTimeout(function() {
     zNode.setAttribute ('id', 'cstore');
     zNode.setAttribute ('role', 'button');
     zNode.setAttribute ('class', "dcg-btn-green");
-    zNode.innerHTML = "<div style = \"font-size: 85%; position: relative; left:-40%; top:-30%\">Save</div>";
-    zNode.setAttribute ('style',"position: relative; width:11.25%; left:2.5%; top:-22.5%; height:22.5%");
-    x = document.getElementsByClassName("align-center-container");
-    for (i = 0; i < x.length; i++) {
-        x[i].appendChild(zNode);
-        break;
-    }
+    zNode.innerHTML = "<div style = \"font-size: 85%; position: relative; left:-180%; top:-20%\">Save</div>";
+    zNode.setAttribute ('style',"position: relative; width:11.25%; left:2.5%; top:10%; height:50%");
+    hold.appendChild(zNode);
 
     zNode = document.createElement('input');
     zNode.setAttribute ('id', 'ctrans');
@@ -79,21 +78,18 @@ setTimeout(function() {
     zNode.max = 100;
     zNode.value = 100;
     zNode.step = 1;
-    zNode.setAttribute ('style',"position: relative; width:15%; left:55%; top:-58.5%; height:22.5%");
+    zNode.setAttribute ('style',"position: relative; width:15%; left:5%; top:5%; height:22.5%");
     zNode.oninput = function () {
         tr = this.value;
     }
-    x = document.getElementsByClassName("align-center-container");
-    for (i = 0; i < x.length; i++) {
-        x[i].appendChild(zNode);
-        break;
-    }
+    hold.appendChild(zNode);
 
     document.getElementById('cstore').addEventListener("click", makeColour, false);
     function makeColour(zEvent){
-        if (gp.style.backgroundColor) {
-            var col = tr+rgb2hex(gp.style.backgroundColor);
-            var acol = rgbaify(gp.style.backgroundColor,tr);
+        var gcol = gp.jscolor.toRGBString();
+        if (gcol) {
+            var col = tr+rgb2hex(gcol);
+            var acol = rgbaify(gcol,tr);
             for (var c in unsafeWindow.Calc.colors) {
                 if (unsafeWindow.Calc.colors[c] == acol) {
                     return;
@@ -102,4 +98,5 @@ setTimeout(function() {
             unsafeWindow.Calc.colors[col] = acol;
         }
     }
+
 }, 0);
