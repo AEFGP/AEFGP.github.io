@@ -17,8 +17,7 @@ How to use:
 - Click the box at the top to open the picker
 - Move around and click to select colours
 - Type/backspace and enter to change the colour directly
-- Move the slider on the right of the save button to change the transparency.
-- Click the save button to the right of the box to save the colour
+- Click the button to the right of the box to save the colour
 - Saved colours appear when you press the cog icon at the top of expressions list and click the coloured circle for a given expression
 
 When you save a desmos graph using custom colours the colours on the expressions will save!
@@ -40,13 +39,6 @@ setTimeout(function() {
         return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
     }
 
-    function rgbaify(rgb,a) {
-        if (/^#[0-9A-F]{6}$/i.test(rgb)) return rgb;
-
-        rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-        return "rgba("+rgb[1]+','+rgb[2]+','+rgb[3]+','+Number(a)/100+')';
-    }
-
     var target = document.getElementsByClassName("dcg-header-desktop")[0];
     var hold = document.createElement ('span');
     target.insertBefore(hold, target.childNodes[2])
@@ -55,48 +47,35 @@ setTimeout(function() {
     zNode.setAttribute ('id', 'picker');
     zNode.setAttribute('value',"ffffff");
     zNode.jscolor = new jscolor(zNode);
-    console.log(zNode.jscolor);
-    zNode.style.width = '25%';
+    zNode.jscolor.alpha = 1;
+    zNode.jscolor.option('hash',false);
+    zNode.style.width = '40%';
     zNode.style.height = '45%';
     hold.appendChild(zNode);
 
     var gp = document.getElementById('picker')
-    var tr = "100";
 
     zNode = document.createElement ('span');
     zNode.setAttribute ('id', 'cstore');
     zNode.setAttribute ('role', 'button');
     zNode.setAttribute ('class', "dcg-btn-green");
-    zNode.innerHTML = "<div style = \"font-size: 85%; position: relative; left:-180%; top:-20%\">Save</div>";
-    zNode.setAttribute ('style',"position: relative; width:11.25%; left:2.5%; top:10%; height:50%");
-    hold.appendChild(zNode);
-
-    zNode = document.createElement('input');
-    zNode.setAttribute ('id', 'ctrans');
-    zNode.type = 'range';
-    zNode.min = 0;
-    zNode.max = 100;
-    zNode.value = 100;
-    zNode.step = 1;
-    zNode.setAttribute ('style',"position: relative; width:15%; left:5%; top:5%; height:22.5%");
-    zNode.oninput = function () {
-        tr = this.value;
-    }
+    zNode.setAttribute ('text', "Save");
+    zNode.setAttribute ('style',"position: relative; width:11.25%; left:2.5%; top:15%; height:45%");
     hold.appendChild(zNode);
 
     document.getElementById('cstore').addEventListener("click", makeColour, false);
     function makeColour(zEvent){
-        var gcol = gp.jscolor.toRGBString();
-        if (gcol) {
-            var col = tr+rgb2hex(gcol);
-            var acol = rgbaify(gcol,tr);
+        var col = gp.jscolor.toHEXString()+'|'+gp.jscolor.channel('A');
+        var acol = gp.jscolor.toRGBAString()
+        if (gp.jscolor.channel('A')=='1'){
+            var gcol = gp.jscolor.toHEXString()
             for (var c in unsafeWindow.Calc.colors) {
-                if (unsafeWindow.Calc.colors[c] == acol) {
+                if (unsafeWindow.Calc.colors[c] == gcol) {
                     return;
                 }
             }
-            unsafeWindow.Calc.colors[col] = acol;
         }
+        unsafeWindow.Calc.colors[col] = acol;
     }
 
 }, 0);
