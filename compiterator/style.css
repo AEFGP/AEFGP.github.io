@@ -1,11 +1,38 @@
-html, body {
-  height: 100%;
-  width: 100%;
+html,
+body {
+    height: 100%;
+    width: 100%;
+    background-color: black;
 }
 
-body{
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#sketch-div {
+    margin-left: 0px;
+    //display: none;
+}
+
+#help {
+    position: absolute;
+    margin-left: -47%;
+    margin-top: -25%
+}
+
+.list-group {
+    position: absolute;
+    margin-left: -24vw;
+    margin-top: 23%;
+}
+
+.list-group-item {
+    height: 4vh;
+}
+
+#helpmsg {
+    display: none;
 }
