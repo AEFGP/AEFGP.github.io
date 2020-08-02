@@ -11,3 +11,5 @@ If you are contributing to someone else's project you should make a pull request
 For wiki pages, you can make formatting and other small improvements, but if you're changing major information or tone you should try to contact the main contributors of those pages.
 
 If you add something that you intend to host through Github pages, you can modify the [index.md](https://github.com/AEFGP/AEFGP.github.io/blob/master/index.md) to link to the pages version of what you added as well as supporting material.
+
+You can create Github Projects in any repo you like and in the organisation itself. It's easier for others to find your projects if you list them in the organisation rather than a particular repo, but might be harder to interact with if separated like that.
