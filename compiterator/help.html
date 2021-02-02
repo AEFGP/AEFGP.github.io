@@ -2,7 +2,21 @@
 
 <head>
     <title>Compiterator</title>
-    <iframe src="nohelp.html">
+    <iframe src="nohelp.html" id="compiterator" style="width:100%;height:100%">
+    <script> 
+        let frame = document.getElementById("compiterator"); 
+          
+        frame.onload = function() 
+        { 
+          frame.style.height =  
+          frame.contentWindow.document.body.scrollHeight + 'px'; 
+           
+  
+         frame.style.width  =  
+          frame.contentWindow.document.body.scrollWidth+'px'; 
+              
+        } 
+        </script> 
 </head>
 
 <body>
