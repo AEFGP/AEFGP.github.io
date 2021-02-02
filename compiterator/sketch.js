@@ -55,7 +55,7 @@ function setup() {
     //Stuff you shouldn't change
     G.CR = 1
     var canvas = createCanvas(windowWidth * G.CR, windowHeight * G.CR)
-    canvas.parent('sketch-div')
+    if (document.getElementById('sketch-div')) canvas.parent('sketch-div')
     G.graph = createGraphics(width * G.gres, height * G.gres)
     G.graph.colorMode(HSB, 360)
     G.graph.background(0)
